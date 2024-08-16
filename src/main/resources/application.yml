@@ -1,0 +1,12 @@
+spring:
+  main:
+    web-application-type: none
+
+
+autogd:
+  video:
+    ffmpeg-location: C:\ProgramData\chocolatey\lib\ffmpeg-full\tools\ffmpeg\bin\ffmpeg.exe
+    ffprobe-location: C:\ProgramData\chocolatey\lib\ffmpeg-full\tools\ffmpeg\bin\ffprobe.exe
+    input-workspace: C:\Users\Arieh\Desktop\AutoGD\input
+    gdVideoStartTime: "00:22:53.5"
+    gdVideoEndTime:  "00:54:20.5"

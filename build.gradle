@@ -1,0 +1,36 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.1.0'
+    id 'io.spring.dependency-management' version '1.1.4'
+}
+
+group = 'io.kellermann'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+
+    implementation 'net.bramp.ffmpeg:ffmpeg:0.8.0'
+
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+
+bootJar {
+    archiveFileName = "${archiveBaseName.get()}.${archiveExtension.get()}"
+    manifest {
+        attributes 'Start-Class': 'io.kellermann.Main'
+    }
+}
