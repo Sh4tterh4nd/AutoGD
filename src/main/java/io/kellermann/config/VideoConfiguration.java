@@ -3,12 +3,20 @@ package io.kellermann.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalTime;
+
 @Component
 @ConfigurationProperties(prefix = "autogd.video")
 public class VideoConfiguration {
     private String ffmpegLocation;
     private String ffprobeLocation;
-    private String inputWorkspace;
+    private String inputWorkspace ="";
+
+    private String precodecParam = "";
+    private String codec = "libx264";
+
 
     private String tempWorkspace = "tmp";
 
@@ -19,15 +27,31 @@ public class VideoConfiguration {
 
 
     private String gdVideoOriginalName = "original.mp4";
-    private String gdVideoStartTime = "00:00:00.000";
-    private String gdVideoEndTime = "00:00:00.000";
+    private LocalTime gdVideoStartTime = LocalTime.MIN;
+    private LocalTime gdVideoEndTime = LocalTime.MIN;
 
     private String finishedGdVideo = "finishedGD.mp4";
 
 
-    private String loudnormParameter  = "I=-10:TP=0.00";
+    private String loudnormParameter  = "I=-15:TP=0.00";
 
     public VideoConfiguration() {
+    }
+
+    public String getPrecodecParam() {
+        return precodecParam;
+    }
+
+    public void setPrecodecParam(String precodecParam) {
+        this.precodecParam = precodecParam;
+    }
+
+    public String getCodec() {
+        return codec;
+    }
+
+    public void setCodec(String codec) {
+        this.codec = codec;
     }
 
     public String getFinishedGdVideo() {
@@ -46,24 +70,24 @@ public class VideoConfiguration {
         this.loudnormParameter = loudnormParameter;
     }
 
-    public String getGdVideoStartTime() {
+    public LocalTime getGdVideoStartTime() {
         return gdVideoStartTime;
     }
 
-    public void setGdVideoStartTime(String gdVideoStartTime) {
+    public void setGdVideoStartTime(LocalTime gdVideoStartTime) {
         this.gdVideoStartTime = gdVideoStartTime;
     }
 
-    public String getGdVideoEndTime() {
+    public LocalTime getGdVideoEndTime() {
         return gdVideoEndTime;
     }
 
-    public void setGdVideoEndTime(String gdVideoEndTime) {
+    public void setGdVideoEndTime(LocalTime gdVideoEndTime) {
         this.gdVideoEndTime = gdVideoEndTime;
     }
 
-    public String getTempWorkspace() {
-        return tempWorkspace;
+    public Path getTempWorkspace() {
+        return getInputWorkspace().resolve(tempWorkspace);
     }
 
     public void setTempWorkspace(String tempWorkspace) {
@@ -86,8 +110,8 @@ public class VideoConfiguration {
         this.ffprobeLocation = ffprobeLocation;
     }
 
-    public String getInputWorkspace() {
-        return inputWorkspace;
+    public Path getInputWorkspace() {
+        return Paths.get(inputWorkspace);
     }
 
     public void setInputWorkspace(String inputWorkspace) {

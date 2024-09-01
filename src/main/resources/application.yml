@@ -2,11 +2,28 @@ spring:
   main:
     web-application-type: none
 
+#logging:
+#  level:
+#    com:
+#      github: ERROR
 
 autogd:
   video:
-    ffmpeg-location: C:\ProgramData\chocolatey\lib\ffmpeg-full\tools\ffmpeg\bin\ffmpeg.exe
-    ffprobe-location: C:\ProgramData\chocolatey\lib\ffmpeg-full\tools\ffmpeg\bin\ffprobe.exe
+    ffmpeg-location: C:\ProgramData\chocolatey\bin\ffmpeg.exe
+    ffprobe-location: C:\ProgramData\chocolatey\bin\ffprobe.exe
     input-workspace: C:\Users\Arieh\Desktop\AutoGD\input
+    resources:
+    recordings:
+
     gdVideoStartTime: "00:22:53.5"
-    gdVideoEndTime:  "00:54:20.5"
+    gdVideoEndTime:  "00:25:20.5"
+    precodec-param: ""
+    codec: "h264_nvenc"
+  gdverwaltung:
+    credentials:
+      username:
+      password:
+    select:
+      location: "Silbern"
+      date: "28.08.2024"
+      time: "22:00"
