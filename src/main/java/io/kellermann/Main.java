@@ -50,41 +50,6 @@ public class Main implements CommandLineRunner {
 
         gdVidGenService.generateGDVideo(Paths.get("C:\\Users\\Arieh\\Desktop\\AutoGD\\input\\charakterfest.jpg"));
 
-//        WorshipMetaData availableWorshipMetaData = worshipServiceApi.getMostRecentWorship();
-//        Files.write(Paths.get("D:\\test1.jpg"), worshipServiceApi.getSeriesImage(ImageType.WIDESCREEN, availableWorshipMetaData));
-//        Files.write(Paths.get("D:\\test2.jpg"), worshipServiceApi.getSeriesImage(ImageType.ALBUMART, availableWorshipMetaData));
-//
-//        Path input = Paths.get("C:\\Users\\Arieh\\Desktop\\AutoGD\\input\\charakterfest.jpg");
-//
-//        Path introImage = Paths.get("C:\\Users\\Arieh\\Desktop\\AutoGD\\input\\genIntro.mp4");
-        Path intro = Paths.get("C:\\Users\\Arieh\\Desktop\\AutoGD\\input\\tmp\\0_intro.mp4");
-        Path cut = Paths.get("C:\\Users\\Arieh\\Desktop\\AutoGD\\input\\tmp\\1_gdPartGain.mp4");
-        Path outro = Paths.get("C:\\Users\\Arieh\\Desktop\\AutoGD\\input\\3_outro.mp4");
-//
-//        Path audio = Paths.get("C:\\Users\\Arieh\\Desktop\\AutoGD\\input\\1_introsound.mp4");
-//
-//        Path outputIntro = Paths.get("C:\\Users\\Arieh\\Desktop\\AutoGD\\input\\finalIntro.mp4");
-//
-//
-        Path original = Paths.get("C:\\Users\\Arieh\\Desktop\\AutoGD\\input\\original.mp4");
-        Path outVersion = Paths.get("C:\\Users\\Arieh\\Desktop\\AutoGD\\input\\outVersion.mp4");
-//
-//        System.out.println(jffmpegService.getDurationNanos(introImage));
-//        System.out.println(jffmpegService.getDurationNanos(intro));
-//        System.out.println(jffmpegService.getDurationNanos(original));
-//
-//        jffmpegService.cutVideo(videoConfig.getGdVideoStartTime(), videoConfig.getGdVideoEndTime(), original, cut);
-//
-//
-        ArrayList<Path> paths = new ArrayList<>();
-        paths.add(intro);
-        paths.add(cut);
-        paths.add(outro);
-
-
-////        ffmpegService.concatVideoWithReEncode(paths, outVersion);
-//        System.out.println(jffmpegService.concatFadeFilter(paths, .5));
-//        jffmpegService.concatVideo(outVersion, paths);
 
     }
 }
