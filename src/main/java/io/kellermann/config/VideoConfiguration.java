@@ -1,5 +1,6 @@
 package io.kellermann.config;
 
+import net.bramp.ffmpeg.nut.PacketHeader;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -12,30 +13,70 @@ import java.time.LocalTime;
 public class VideoConfiguration {
     private String ffmpegLocation;
     private String ffprobeLocation;
-    private String inputWorkspace ="";
+
+    private Path inputWorkspace = Paths.get("");
+    private Path tempWorkspace = inputWorkspace.resolve("tmp");
+
+    private Path resources = Paths.get("");
+    private Path recordings = Paths.get("");
+    private Path output = Paths.get("");
+    private Path wavTarget = Paths.get("");
+
 
     private String precodecParam = "";
     private String codec = "libx264";
 
 
-    private String tempWorkspace = "tmp";
-
-    private String introImageName = "0_title.png";
     private String introVideoName = "1_intro.mp4";
     private String introSoundName = "1_introsound.mp4";
     private String outroVideoName = "3_outro.mp4";
 
 
     private String gdVideoOriginalName = "original.mp4";
+
+
     private LocalTime gdVideoStartTime = LocalTime.MIN;
     private LocalTime gdVideoEndTime = LocalTime.MIN;
 
     private String finishedGdVideo = "finishedGD.mp4";
 
 
-    private String loudnormParameter  = "I=-15:TP=0.00";
+    private String loudnormParameter = "I=-15:TP=0.00";
 
     public VideoConfiguration() {
+    }
+
+
+    public Path getRecordings() {
+        return recordings;
+    }
+
+    public void setRecordings(Path recordings) {
+        this.recordings = recordings;
+    }
+
+    public Path getOutput() {
+        return output;
+    }
+
+    public void setOutput(Path output) {
+        this.output = output;
+    }
+
+    public Path getWavTarget() {
+        return wavTarget;
+    }
+
+    public void setWavTarget(Path wavTarget) {
+        this.wavTarget = wavTarget;
+    }
+
+    public Path getResources() {
+        return resources;
+    }
+
+    public void setResources(Path resources) {
+        this.resources = resources;
     }
 
     public String getPrecodecParam() {
@@ -87,10 +128,10 @@ public class VideoConfiguration {
     }
 
     public Path getTempWorkspace() {
-        return getInputWorkspace().resolve(tempWorkspace);
+        return tempWorkspace;
     }
 
-    public void setTempWorkspace(String tempWorkspace) {
+    public void setTempWorkspace(Path tempWorkspace) {
         this.tempWorkspace = tempWorkspace;
     }
 
@@ -111,31 +152,24 @@ public class VideoConfiguration {
     }
 
     public Path getInputWorkspace() {
-        return Paths.get(inputWorkspace);
+        return inputWorkspace;
     }
 
-    public void setInputWorkspace(String inputWorkspace) {
+    public void setInputWorkspace(Path inputWorkspace) {
         this.inputWorkspace = inputWorkspace;
     }
 
-    public String getIntroImageName() {
-        return introImageName;
-    }
 
-    public void setIntroImageName(String introImageName) {
-        this.introImageName = introImageName;
-    }
-
-    public String getIntroVideoName() {
-        return introVideoName;
+    public Path getIntroVideoName() {
+        return resources.resolve(introVideoName);
     }
 
     public void setIntroVideoName(String introVideoName) {
         this.introVideoName = introVideoName;
     }
 
-    public String getIntroSoundName() {
-        return introSoundName;
+    public Path getIntroSoundName() {
+        return resources.resolve(introSoundName);
     }
 
     public void setIntroSoundName(String introSoundName) {
@@ -150,8 +184,8 @@ public class VideoConfiguration {
         this.gdVideoOriginalName = gdVideoOriginalName;
     }
 
-    public String getOutroVideoName() {
-        return outroVideoName;
+    public Path getOutroVideoName() {
+        return resources.resolve(outroVideoName);
     }
 
     public void setOutroVideoName(String outroVideoName) {

@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -56,6 +59,13 @@ public class WorshipServiceApi {
         return mono.block();
     }
 
+    public void saveSeriesImageTo(ImageType imageType, WorshipMetaData worshipMetaData, Path seriesImagePath) {
+        try {
+            Files.write(seriesImagePath,getSeriesImage(imageType,worshipMetaData));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     /**
      * Returns Worships by Date

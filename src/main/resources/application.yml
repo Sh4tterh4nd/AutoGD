@@ -11,12 +11,18 @@ autogd:
   video:
     ffmpeg-location: C:\ProgramData\chocolatey\bin\ffmpeg.exe
     ffprobe-location: C:\ProgramData\chocolatey\bin\ffprobe.exe
-    input-workspace: C:\Users\Arieh\Desktop\AutoGD\input
-    resources:
-    recordings:
+
+    input-workspace: C:\Users\Arieh\Desktop\NewGD
+    resources:  ${autogd.video.input-workspace}\resources
+    recordings: ${autogd.video.input-workspace}\recordings
+    output: ${autogd.video.input-workspace}\video
+    wav-target: ${autogd.video.input-workspace}\wav
+
 
     gdVideoStartTime: "00:22:53.5"
     gdVideoEndTime:  "00:25:20.5"
+
+
     precodec-param: ""
     codec: "h264_nvenc"
   gdverwaltung:

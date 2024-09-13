@@ -22,7 +22,7 @@ public class JaffreeFFmpegService {
         this.videoConfiguration = videoConfiguration;
     }
 
-    public void imageToVideo(Path imagePath, Path videoOutput, double duration) {
+    public void imageToVideo(Path imagePath, Path videoOutput, double fadeDuration) {
         FFmpeg
                 .atPath()
                 .addInput(UrlInput.fromPath(imagePath)
@@ -31,12 +31,12 @@ public class JaffreeFFmpegService {
                         .addArguments("-loop", "1")
                         .addArguments("-pix_fmt", "yuv420p")
                         .addArguments("-framerate", "30")
-                        .addArguments("-t", String.valueOf(duration)))
+                        .addArguments("-t", String.valueOf(fadeDuration)))
                 .addOutput(UrlOutput.toPath(videoOutput)
                         .setFrameRate(30)
                         .setCodec(StreamType.VIDEO, "libx264")
                         .setCodec(StreamType.AUDIO, "aac")
-                        .addArguments("-vf", "fade=out:st=" + (duration - 0.5) + ":d=0.5")
+                        .addArguments("-vf", "fade=out:st=" + (fadeDuration - 0.5) + ":d=0.5")
                         .setFormat("mp4")
                         .addArgument("-shortest")
                 )
@@ -97,8 +97,8 @@ public class JaffreeFFmpegService {
 
     }
 
-    public void concatVideo(Path output, double fadeDuration, Path... videos){
-        concatVideo(output, Arrays.asList(videos),fadeDuration);
+    public void concatVideo(Path output, double fadeDuration, Path... videos) {
+        concatVideo(output, Arrays.asList(videos), fadeDuration);
     }
 
     public void concatVideo(Path output, List<Path> videos, double fadeDuration) {
@@ -117,13 +117,23 @@ public class JaffreeFFmpegService {
         fFmpeg.addOutput(UrlOutput.toPath(output)
                 .addArguments("-vcodec", videoConfiguration.getCodec())
                 .addArguments("-r", "30/1")
-                .addArguments("-b:v", "22000000")
+                .addArguments("-b:v", "14000000")
                 .addArguments("-acodec", "aac")
                 .addArguments("-b:a", "192000")
                 .addArguments("-map", "[aud]")
                 .addArguments("-map", "[v]")
                 .addArguments("-preset", "fast")
         );
+        fFmpeg.execute();
+    }
+
+    public void convertToWav(Path input, Path output) {
+        FFmpeg fFmpeg = FFmpeg
+                .atPath()
+                .setOverwriteOutput(true)
+                .addInput(UrlInput.fromPath(input))
+                .addOutput(UrlOutput.toPath(output));
+
         fFmpeg.execute();
     }
 
@@ -142,6 +152,19 @@ public class JaffreeFFmpegService {
         return null;
     }
 
+
+    public Double getFrameRate(Path path) {
+        FFprobeResult res = FFprobe.atPath()
+                .setShowStreams(true)
+                .setInput(path)
+                .execute();
+        for (com.github.kokorin.jaffree.ffprobe.Stream stream : res.getStreams()) {
+            if (stream.getCodecType().equals(StreamType.VIDEO)) {
+                return stream.getAvgFrameRate().doubleValue();
+            }
+        }
+        return null;
+    }
 
 
     private String concatVideoFilterBuilder(int number) {
@@ -163,18 +186,13 @@ public class JaffreeFFmpegService {
         for (int i = 0; i < list.size(); i++) {
             if (i == 0) {
                 sr += "[" + i + ":v]fade=type=out:duration=" + duration + ":start_time=" + (getSecondsWithPeriod(list.get(i)) - duration) + ",setpts=PTS-STARTPTS[v" + i + "];";
-
-//                sr += "[" + i + ":a]afade=t=out:duration=" + duration + ":start_time=" + (getSecondsWithPeriod(list.get(i)) - duration) + ",setpts=PTS-STARTPTS[a" + i + "];";
-                sr += "[" + i + ":a]afade=t=out:st="+(getSecondsWithPeriod(list.get(i)) - duration)+":d="+duration+"[a" + i + "];";
+                sr += "[" + i + ":a]afade=t=out:st=" + (getSecondsWithPeriod(list.get(i)) - duration) + ":d=" + duration + "[a" + i + "];";
             } else if (i == list.size() - 1) {
                 sr += "[" + i + ":v]fade=type=in:duration=" + duration + ",setpts=PTS-STARTPTS[v" + i + "];";
-//                sr += "[" + i + ":a]afade=t=in:duration=" + duration + ",setpts=PTS-STARTPTS[a" + i + "];";
-
-
-                sr += "[" + i + ":a]afade=t=in:d="+duration+"[a" + i + "];";
+                sr += "[" + i + ":a]afade=t=in:d=" + duration + "[a" + i + "];";
             } else {
                 sr += "[" + i + ":v]fade=type=in:duration=" + duration + ",fade=type=out:duration=" + duration + ":start_time=" + (getSecondsWithPeriod(list.get(i)) - duration) + ",setpts=PTS-STARTPTS[v" + i + "];";
-                sr += "[" + i + ":a]afade=t=in:d="+duration+",afade=t=out:st="+(getSecondsWithPeriod(list.get(i)) - duration)+":d="+duration+"[a" + i + "];";
+                sr += "[" + i + ":a]afade=t=in:d=" + duration + ",afade=t=out:st=" + (getSecondsWithPeriod(list.get(i)) - duration) + ":d=" + duration + "[a" + i + "];";
             }
         }
 
@@ -193,7 +211,6 @@ public class JaffreeFFmpegService {
     }
 
     private double getSecondsWithPeriod(LocalTime localTime) {
-        System.out.println((localTime.getNano() / 1000000000.0));
         return (localTime.toNanoOfDay() / 1000000000.0);
     }
 }
