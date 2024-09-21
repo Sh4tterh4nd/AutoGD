@@ -15,7 +15,7 @@ public class VideoConfiguration {
     private String ffprobeLocation;
 
     private Path inputWorkspace = Paths.get("");
-    private Path tempWorkspace = inputWorkspace.resolve("tmp");
+    private Path tempWorkspace = Paths.get("");
 
     private Path resources = Paths.get("");
     private Path recordings = Paths.get("");

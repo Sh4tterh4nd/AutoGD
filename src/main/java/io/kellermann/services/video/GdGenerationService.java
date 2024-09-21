@@ -77,6 +77,8 @@ public class GdGenerationService {
 
         Path renderedIntro = tempWorkspace.resolve("rendered_intro.mp4");
 
+        System.err.println(videoConfiguration.getInputWorkspace());
+
         worshipServiceApi.saveSeriesImageTo(ImageType.ALBUMART, mostRecentWorship, albumartImage);
         worshipServiceApi.saveSeriesImageTo(ImageType.WIDESCREEN, mostRecentWorship, widescreenImage);
 
@@ -97,7 +99,7 @@ public class GdGenerationService {
 
 
         //Generate podcast
-        jaffreeFFmpegService.convertToWav(videoConfiguration.getOutroVideoName(),videoConfiguration.getWavTarget().resolve("podcast.wav"));
+        jaffreeFFmpegService.convertToWav(videoConfiguration.getOutput().resolve("finalGD.mp4"),videoConfiguration.getWavTarget().resolve("podcast.wav"));
 
     }
 

@@ -13,6 +13,7 @@ autogd:
     ffprobe-location: C:\ProgramData\chocolatey\bin\ffprobe.exe
 
     input-workspace: C:\Users\Arieh\Desktop\NewGD
+    temp-workspace: ${autogd.video.input-workspace}\tmp
     resources:  ${autogd.video.input-workspace}\resources
     recordings: ${autogd.video.input-workspace}\recordings
     output: ${autogd.video.input-workspace}\video
@@ -31,5 +32,5 @@ autogd:
       password:
     select:
       location: "Silbern"
-      date: "28.08.2024"
-      time: "22:00"
+      date: "22.09.2024"
+      time: "16:00"
