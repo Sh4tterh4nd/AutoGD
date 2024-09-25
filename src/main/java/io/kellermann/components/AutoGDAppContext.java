@@ -7,9 +7,11 @@ import com.fasterxml.jackson.databind.deser.BeanDeserializerModifier;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
+import io.kellermann.components.deserializers.PersonDeserializer;
 import io.kellermann.components.deserializers.SeriesDeserializer;
 import io.kellermann.components.deserializers.WorshipDeserializer;
 import io.kellermann.config.VideoConfiguration;
+import io.kellermann.model.gdVerwaltung.PersonMetaData;
 import io.kellermann.model.gdVerwaltung.SeriesMetaData;
 import io.kellermann.model.gdVerwaltung.WorshipMetaData;
 import net.bramp.ffmpeg.FFmpeg;
@@ -62,7 +64,7 @@ public class AutoGDAppContext {
         module.setDeserializerModifier(new BeanDeserializerModifier() {
             @Override
             public JsonDeserializer<?> modifyDeserializer(DeserializationConfig config, BeanDescription beanDesc, JsonDeserializer<?> deserializer) {
-                return beanDesc.getBeanClass() == WorshipMetaData.class ? new WorshipDeserializer(deserializer, new SeriesDeserializer(deserializer)) : deserializer;
+                return beanDesc.getBeanClass() == WorshipMetaData.class ? new WorshipDeserializer(deserializer, new SeriesDeserializer(deserializer), new PersonDeserializer(deserializer)) : deserializer;
             }
         });
         return module;
@@ -74,6 +76,17 @@ public class AutoGDAppContext {
             @Override
             public JsonDeserializer<?> modifyDeserializer(DeserializationConfig config, BeanDescription beanDesc, JsonDeserializer<?> deserializer) {
                 return beanDesc.getBeanClass() == SeriesMetaData.class ? new SeriesDeserializer(deserializer) : deserializer;
+            }
+        });
+        return module;
+    }
+    @Bean
+    public SimpleModule personDeserializer() {
+        SimpleModule module = new SimpleModule("Person-Deserializer-Module");
+        module.setDeserializerModifier(new BeanDeserializerModifier() {
+            @Override
+            public JsonDeserializer<?> modifyDeserializer(DeserializationConfig config, BeanDescription beanDesc, JsonDeserializer<?> deserializer) {
+                return beanDesc.getBeanClass() == PersonMetaData.class ? new PersonDeserializer(deserializer) : deserializer;
             }
         });
         return module;

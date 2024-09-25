@@ -22,7 +22,7 @@ public class JaffreeFFmpegService {
         this.videoConfiguration = videoConfiguration;
     }
 
-    public void imageToVideo(Path imagePath, Path videoOutput, double fadeDuration) {
+    public void imageToVideo(Path imagePath, Path videoOutput, double duration) {
         FFmpeg
                 .atPath()
                 .addInput(UrlInput.fromPath(imagePath)
@@ -31,12 +31,12 @@ public class JaffreeFFmpegService {
                         .addArguments("-loop", "1")
                         .addArguments("-pix_fmt", "yuv420p")
                         .addArguments("-framerate", "30")
-                        .addArguments("-t", String.valueOf(fadeDuration)))
+                        .addArguments("-t", String.valueOf(duration)))
                 .addOutput(UrlOutput.toPath(videoOutput)
                         .setFrameRate(30)
                         .setCodec(StreamType.VIDEO, "libx264")
                         .setCodec(StreamType.AUDIO, "aac")
-                        .addArguments("-vf", "fade=out:st=" + (fadeDuration - 0.5) + ":d=0.5")
+                        .addArguments("-vf", "fade=out:st=" + (-0.5) + ":d=0.5")
                         .setFormat("mp4")
                         .addArgument("-shortest")
                 )
@@ -51,7 +51,7 @@ public class JaffreeFFmpegService {
     }
 
     public void concatVideoAndMergeAudio(Path output, Path audio, List<Path> videos) {
-        System.out.println(concatFadeFilter(videos, 5));
+
         FFmpeg fFmpeg = FFmpeg.atPath();
         videos.forEach(s -> fFmpeg.addInput(UrlInput.fromPath(s)));
         fFmpeg.addInput(UrlInput.fromPath(audio));
@@ -117,13 +117,20 @@ public class JaffreeFFmpegService {
         fFmpeg.addOutput(UrlOutput.toPath(output)
                 .addArguments("-vcodec", videoConfiguration.getCodec())
                 .addArguments("-r", "30/1")
-                .addArguments("-b:v", "14000000")
+                .addArguments("-b:v", "10000000")
                 .addArguments("-acodec", "aac")
                 .addArguments("-b:a", "192000")
                 .addArguments("-map", "[aud]")
                 .addArguments("-map", "[v]")
                 .addArguments("-preset", "fast")
         );
+
+        fFmpeg.setOutputListener(new OutputListener() {
+            @Override
+            public void onOutput(String s) {
+                System.out.println(s);
+            }
+        });
         fFmpeg.execute();
     }
 

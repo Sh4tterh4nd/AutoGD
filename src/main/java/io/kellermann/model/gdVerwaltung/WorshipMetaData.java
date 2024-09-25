@@ -28,6 +28,8 @@ public class WorshipMetaData implements Comparable<WorshipMetaData> {
 
 	private SeriesMetaData series;
 
+	private PersonMetaData person;
+
 	private Map<Language, String> serviceTitleByLanguage = new HashMap<Language, String>();
 
 	public String getServiceTitle(Language serviceLang) {
@@ -44,6 +46,14 @@ public class WorshipMetaData implements Comparable<WorshipMetaData> {
 
 	public void setServiceID(Integer serviceID) {
 		this.serviceID = serviceID;
+	}
+
+	public PersonMetaData getPerson() {
+		return person;
+	}
+
+	public void setPerson(PersonMetaData person) {
+		this.person = person;
 	}
 
 	public LocalDate getStartDate() {

@@ -26,6 +26,21 @@ autogd:
 
     precodec-param: ""
     codec: "h264_nvenc"
+
+  youtube:
+    description: |-
+      Gottesdienst vom [%DATUM%] mit [%PASTOR%]
+      Silbern Church, Dietikon
+
+      Bleib mit uns in Verbindung:
+      Kontaktformular: https://www.silbern.church/kontakt/#kontaktformular
+      https://www.instagram.com/silbern.church
+      https://www.facebook.com/silbern
+
+      Als Kirche erleben wir heute noch, wie Gott Herzen berührt, Gebete beantwortet, Wunder tut und Menschen verändert.
+
+      Mehr über die Silbern Church: https://www.silbern.church/
+      Möchtest du die Silbern Church unterstützen? https://www.silbern.church/spenden/
   gdverwaltung:
     credentials:
       username:
@@ -33,4 +48,4 @@ autogd:
     select:
       location: "Silbern"
       date: "22.09.2024"
-      time: "16:00"
+      time: "11:00"
