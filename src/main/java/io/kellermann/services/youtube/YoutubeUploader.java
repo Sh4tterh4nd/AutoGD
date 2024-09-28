@@ -34,32 +34,71 @@ import java.util.*;
 
 @Service
 public class YoutubeUploader {
-
-    private static YouTube youtube;
     private final String VIDEO_FILE_FORMAT = "video/*";
 
-    private YoutubeAuthentication ytYoutubeAuthentication;
     private YoutubeConfiguration ytYoutubeConfiguration;
 
     private TemplatingEngine templatingEngine;
 
-    public YoutubeUploader(YoutubeAuthentication ytYoutubeAuthentication, YoutubeConfiguration ytYoutubeConfiguration, TemplatingEngine templatingEngine) {
-        this.ytYoutubeAuthentication = ytYoutubeAuthentication;
+    private YouTube youTube;
+
+    public YoutubeUploader(YouTube youtube, YoutubeConfiguration ytYoutubeConfiguration, TemplatingEngine templatingEngine) {
         this.ytYoutubeConfiguration = ytYoutubeConfiguration;
         this.templatingEngine = templatingEngine;
+        this.youTube = youtube;
     }
 
+
+    public void insertVideoToPlaylist(Video video ,WorshipMetaData worshipMetaData) throws IOException {
+        ResourceId resourceId = new ResourceId();
+        resourceId.setKind("youtube#video");
+        resourceId.setVideoId(video.getId());
+
+        Playlist playlist = findOrCreatePlaylist(worshipMetaData.getSeries().getTitleLanguage(worshipMetaData.getServiceLanguage()));
+
+
+        PlaylistItemSnippet playlistItemSnippet = new PlaylistItemSnippet();
+        playlistItemSnippet.setTitle(worshipMetaData.getServiceTitle(worshipMetaData.getServiceLanguage()));
+        playlistItemSnippet.setPlaylistId(playlist.getId());
+        playlistItemSnippet.setResourceId(resourceId);
+
+        PlaylistItem playlistItem = new PlaylistItem();
+        playlistItem.setSnippet(playlistItemSnippet);
+
+        YouTube.PlaylistItems.Insert playlistItemsInsertCommand =
+                youTube.playlistItems().insert("snippet,contentDetails", playlistItem);
+        PlaylistItem returnedPlaylistItem = playlistItemsInsertCommand.execute();
+    }
+
+
+    public Playlist findOrCreatePlaylist(String title) throws IOException {
+        List<Playlist> items = youTube.playlists().list("id,contentDetails,snippet").setMine(true).execute().getItems();
+
+        return items.stream().filter(s -> s.getSnippet().getTitle().equals(title)).findFirst().orElse(createPlaylist(title));
+
+    }
+
+    public Playlist createPlaylist(String title) throws IOException {
+        PlaylistSnippet playlistSnippet = new PlaylistSnippet();
+        playlistSnippet.setTitle(title);
+        PlaylistStatus playlistStatus = new PlaylistStatus();
+        playlistStatus.setPrivacyStatus("public");
+
+        Playlist youTubePlaylist = new Playlist();
+        youTubePlaylist.setSnippet(playlistSnippet);
+        youTubePlaylist.setStatus(playlistStatus);
+
+
+        YouTube.Playlists.Insert playlistInsertCommand =
+                youTube.playlists().insert("snippet,status", youTubePlaylist);
+
+        return playlistInsertCommand.execute();
+    }
+
+
     public void uploadToYoutube(Path videoPath, WorshipMetaData worshipMetaData) {
-        List<String> scopes = Lists.newArrayList("https://www.googleapis.com/auth/youtube.upload");
 
         try {
-            // Authorize the request.
-            Credential credential = ytYoutubeAuthentication.authorize(scopes, "uploadvideo");
-
-            // This object is used to make YouTube Data API requests.
-            youtube = new YouTube.Builder(YoutubeAuthentication.HTTP_TRANSPORT, YoutubeAuthentication.JSON_FACTORY, credential).setApplicationName(
-                    "auto-GD-Application").build();
-
 
             // Add extra information to the video before uploading.
             Video videoObjectDefiningMetadata = new Video();
@@ -78,16 +117,18 @@ public class YoutubeUploader {
             snippet.setTitle(templatingEngine.processTemplateWithKeyModel(ytYoutubeConfiguration.getTitle(), worshipMetaData));
             snippet.setDescription(templatingEngine.processTemplateWithKeyModel(ytYoutubeConfiguration.getDescription(), worshipMetaData));
 
+
             snippet.setTags(ytYoutubeConfiguration.getTags());
+
 
             // Add the completed snippet object to the video resource.
             videoObjectDefiningMetadata.setSnippet(snippet);
 
-            InputStreamContent mediaContent = new InputStreamContent(VIDEO_FILE_FORMAT, new FileInputStream(videoPath.toFile()));
 
+            InputStreamContent mediaContent = new InputStreamContent(VIDEO_FILE_FORMAT, new FileInputStream(videoPath.toFile()));
             mediaContent.setLength(videoPath.toFile().length());
 
-            YouTube.Videos.Insert videoInsert = youtube.videos()
+            YouTube.Videos.Insert videoInsert = youTube.videos()
                     .insert("snippet,statistics,status", videoObjectDefiningMetadata, mediaContent);
 
 
@@ -120,6 +161,8 @@ public class YoutubeUploader {
             // Call the API and upload the video.
             Video returnedVideo = videoInsert.execute();
 
+            insertVideoToPlaylist(returnedVideo, worshipMetaData);
+
             // Print data about the newly inserted video from the API response.
             System.out.println("\n================== Returned Video ==================\n");
             System.out.println("  - Id: " + returnedVideo.getId());
@@ -127,6 +170,8 @@ public class YoutubeUploader {
             System.out.println("  - Tags: " + returnedVideo.getSnippet().getTags());
             System.out.println("  - Privacy Status: " + returnedVideo.getStatus().getPrivacyStatus());
             System.out.println("  - Video Count: " + returnedVideo.getStatistics().getViewCount());
+
+
 
         } catch (GoogleJsonResponseException e) {
             System.err.println("GoogleJsonResponseException code: " + e.getDetails().getCode() + " : "

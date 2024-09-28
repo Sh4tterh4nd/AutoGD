@@ -51,9 +51,6 @@ autogd:
     for-kids: false
     privacy-status: public
   gdverwaltung:
-    credentials:
-      username:
-      password:
     select:
       location: "Silbern"
       date: "22.09.2024"

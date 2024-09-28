@@ -11,6 +11,7 @@ import java.time.LocalTime;
 @Component
 @ConfigurationProperties(prefix = "autogd.video")
 public class VideoConfiguration {
+    //TODO remove ffmpeg paths
     private String ffmpegLocation;
     private String ffprobeLocation;
 

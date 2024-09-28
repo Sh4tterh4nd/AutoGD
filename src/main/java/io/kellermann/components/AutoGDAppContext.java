@@ -14,8 +14,6 @@ import io.kellermann.config.VideoConfiguration;
 import io.kellermann.model.gdVerwaltung.PersonMetaData;
 import io.kellermann.model.gdVerwaltung.SeriesMetaData;
 import io.kellermann.model.gdVerwaltung.WorshipMetaData;
-import net.bramp.ffmpeg.FFmpeg;
-import net.bramp.ffmpeg.FFprobe;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -24,7 +22,6 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.io.IOException;
 import java.util.List;
 
 @Configuration
@@ -35,27 +32,6 @@ public class AutoGDAppContext {
         this.videoConfiguration = videoConfiguration;
     }
 
-    @Bean
-    public FFmpeg generateFfmpeg() {
-        try {
-            return new FFmpeg(videoConfiguration.getFfmpegLocation());
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
-        return null;
-    }
-
-    @Bean
-    public FFprobe generateFfprobe() {
-        try {
-            return new FFprobe(videoConfiguration.getFfprobeLocation());
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
-        return null;
-    }
 
 
     @Bean
@@ -69,6 +45,7 @@ public class AutoGDAppContext {
         });
         return module;
     }
+
     @Bean
     public SimpleModule seriesDeserializer() {
         SimpleModule module = new SimpleModule("Series-Deserializer-Module");
@@ -80,6 +57,7 @@ public class AutoGDAppContext {
         });
         return module;
     }
+
     @Bean
     public SimpleModule personDeserializer() {
         SimpleModule module = new SimpleModule("Person-Deserializer-Module");
@@ -135,4 +113,7 @@ public class AutoGDAppContext {
                 )
                 .build();
     }
+
+
+
 }

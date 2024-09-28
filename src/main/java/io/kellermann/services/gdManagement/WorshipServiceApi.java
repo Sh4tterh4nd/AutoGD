@@ -106,7 +106,7 @@ public class WorshipServiceApi {
                 .stream()
                 .filter(this::isPassed)
                 .sorted(Comparator.reverseOrder())
-                .findFirst().get();
+                .findFirst().orElse(null);
 
     }
 

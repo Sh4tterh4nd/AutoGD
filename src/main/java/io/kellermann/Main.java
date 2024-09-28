@@ -18,6 +18,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import java.nio.file.Path;
+import java.util.Objects;
 
 @SpringBootApplication
 @AutoConfiguration
@@ -53,8 +54,12 @@ public class Main implements CommandLineRunner {
     public void run(String... args) throws Exception {
         WorshipMetaData worshipMetaData = worshipServiceApi.getMostRecentWorship();
 
-        Path outputPath = gdVidGenService.gemerateGDVideo(worshipMetaData);
+        if (Objects.nonNull(worshipMetaData)) {
+            Path outputPath = gdVidGenService.gemerateGDVideo(worshipMetaData);
+            youtubeUploader.uploadToYoutube(outputPath, worshipMetaData);
+        } else {
+            throw new Exception("Couldn't find any worship data. Try specify date and time of worship in the application.yml");
+        }
 
-        youtubeUploader.uploadToYoutube(outputPath, worshipMetaData);
     }
 }
