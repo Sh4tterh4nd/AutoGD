@@ -1,108 +1,119 @@
 package io.kellermann.model.gdVerwaltung;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PersonMetaData {
 
-    private Integer personId;
-    private String personLastName;
-    private String personFirstName;
-    private String personPicture;
-    private String personEmail;
-    private String personPhone;
-    private String personInstagram;
-    private String personFacebook;
-    private String personTwitter;
-    private String personYoutube;
-    private Boolean personActive;
+    @JsonProperty("person_id")
+    private Integer id;
+    @JsonProperty("person_lastname")
+    private String lastName;
+    @JsonProperty("person_firstname")
+    private String firstName;
+    @JsonProperty("person_picture")
+    private String picture;
+    @JsonProperty("person_email")
+    private String email;
+    @JsonProperty("person_phone")
+    private String phone;
+    @JsonProperty("person_instagram")
+    private String instagram;
+    @JsonProperty("person_facebook")
+    private String facebook;
+    @JsonProperty("person_twitter")
+    private String twitter;
+    @JsonProperty("person_youtube")
+    private String youtube;
+    @JsonProperty("person_active")
+    private Boolean active;
 
-
-    public Integer getPersonId() {
-        return personId;
+    public Integer getId() {
+        return id;
     }
 
-    public void setPersonId(Integer personId) {
-        this.personId = personId;
+    public void setId(Integer id) {
+        this.id = id;
     }
 
-    public String getPersonLastName() {
-        return personLastName;
+    public String getLastName() {
+        return lastName;
     }
 
-    public void setPersonLastName(String personLastName) {
-        this.personLastName = personLastName;
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
-    public String getPersonFirstName() {
-        return personFirstName;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setPersonFirstName(String personFirstName) {
-        this.personFirstName = personFirstName;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
-    public String getPersonPicture() {
-        return personPicture;
+    public String getPicture() {
+        return picture;
     }
 
-    public void setPersonPicture(String personPicture) {
-        this.personPicture = personPicture;
+    public void setPicture(String picture) {
+        this.picture = picture;
     }
 
-    public String getPersonEmail() {
-        return personEmail;
+    public String getEmail() {
+        return email;
     }
 
-    public void setPersonEmail(String personEmail) {
-        this.personEmail = personEmail;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
-    public String getPersonPhone() {
-        return personPhone;
+    public String getPhone() {
+        return phone;
     }
 
-    public void setPersonPhone(String personPhone) {
-        this.personPhone = personPhone;
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
-    public String getPersonInstagram() {
-        return personInstagram;
+    public String getInstagram() {
+        return instagram;
     }
 
-    public void setPersonInstagram(String personInstagram) {
-        this.personInstagram = personInstagram;
+    public void setInstagram(String instagram) {
+        this.instagram = instagram;
     }
 
-    public String getPersonFacebook() {
-        return personFacebook;
+    public String getFacebook() {
+        return facebook;
     }
 
-    public void setPersonFacebook(String personFacebook) {
-        this.personFacebook = personFacebook;
+    public void setFacebook(String facebook) {
+        this.facebook = facebook;
     }
 
-    public String getPersonTwitter() {
-        return personTwitter;
+    public String getTwitter() {
+        return twitter;
     }
 
-    public void setPersonTwitter(String personTwitter) {
-        this.personTwitter = personTwitter;
+    public void setTwitter(String twitter) {
+        this.twitter = twitter;
     }
 
-    public String getPersonYoutube() {
-        return personYoutube;
+    public String getYoutube() {
+        return youtube;
     }
 
-    public void setPersonYoutube(String personYoutube) {
-        this.personYoutube = personYoutube;
+    public void setYoutube(String youtube) {
+        this.youtube = youtube;
     }
 
-    public Boolean getPersonActive() {
-        return personActive;
+    public Boolean getActive() {
+        return active;
     }
 
-    public void setPersonActive(Boolean personActive) {
-        this.personActive = personActive;
+    public void setActive(Boolean active) {
+        this.active = active;
     }
 }

@@ -41,20 +41,20 @@ public class SeriesDeserializer extends StdDeserializer<SeriesMetaData> implemen
                 String fieldName = secondary.getCurrentName();
                 secondary.nextToken();
 
-                if (fieldName.startsWith("service_title_")) {
-                    seriesMetaData.setSeriesID(secondary.getValueAsInt(0));
+                if (fieldName.startsWith("series_id ")) {
+                    seriesMetaData.setId(secondary.getValueAsInt(0));
                 } else if (fieldName.startsWith("series_title_")) {
-                    seriesMetaData.addSeriesTitleLanguage(getLanguage(fieldName), secondary.getValueAsString());
+                    seriesMetaData.addTitleLanguage(getLanguage(fieldName), secondary.getValueAsString());
                 } else if (fieldName.startsWith("series_description_")) {
-                    seriesMetaData.addSeriesDescriptionLanguage(getLanguage(fieldName), secondary.getValueAsString());
+                    seriesMetaData.addDescriptionLanguage(getLanguage(fieldName), secondary.getValueAsString());
                 } else if (fieldName.startsWith("series_albumart_")) {
-                    seriesMetaData.addSeriesAlbumartLanguage(getLanguage(fieldName), secondary.getValueAsString());
+                    seriesMetaData.addAlbumartLanguage(getLanguage(fieldName), secondary.getValueAsString());
                 } else if (fieldName.startsWith("series_image_")) {
-                    seriesMetaData.addSeriesImageLanguage(getLanguage(fieldName), secondary.getValueAsString());
+                    seriesMetaData.addImageLanguage(getLanguage(fieldName), secondary.getValueAsString());
                 } else if (fieldName.startsWith("series_signage_")) {
-                    seriesMetaData.addSeriesSignageLanguage(getLanguage(fieldName), secondary.getValueAsString());
+                    seriesMetaData.addSignageLanguage(getLanguage(fieldName), secondary.getValueAsString());
                 } else if (fieldName.startsWith("series_url_")) {
-                    seriesMetaData.addSeriesUrlLanguage(getLanguage(fieldName), secondary.getValueAsString());
+                    seriesMetaData.addUrlLanguage(getLanguage(fieldName), secondary.getValueAsString());
                 }
             } else if (jsonToken == null) {
                 secondary.close();

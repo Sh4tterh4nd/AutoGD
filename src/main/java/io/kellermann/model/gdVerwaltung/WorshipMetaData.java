@@ -21,7 +21,7 @@ public class WorshipMetaData implements Comparable<WorshipMetaData> {
 	private LocalTime startTime;
 
 	@JsonProperty("service_language_id")
-	private String serviceLanguage;
+	private Language serviceLanguage;
 
 	@JsonProperty("campus_shortname")
 	private String campusShortname;
@@ -72,11 +72,11 @@ public class WorshipMetaData implements Comparable<WorshipMetaData> {
 		this.startTime = startTime;
 	}
 
-	public String getServiceLanguage() {
+	public Language getServiceLanguage() {
 		return serviceLanguage;
 	}
 
-	public void setServiceLanguage(String serviceLanguage) {
+	public void setServiceLanguage(Language serviceLanguage) {
 		this.serviceLanguage = serviceLanguage;
 	}
 

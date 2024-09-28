@@ -8,15 +8,10 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.deser.ResolvableDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import com.fasterxml.jackson.databind.util.TokenBuffer;
-import io.kellermann.model.gdVerwaltung.Language;
 import io.kellermann.model.gdVerwaltung.PersonMetaData;
-import io.kellermann.model.gdVerwaltung.SeriesMetaData;
 import io.kellermann.model.gdVerwaltung.WorshipMetaData;
 
 import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class PersonDeserializer extends StdDeserializer<PersonMetaData> implements ResolvableDeserializer {
     private final JsonDeserializer<?> defaultDeserializer;
@@ -35,27 +30,27 @@ public class PersonDeserializer extends StdDeserializer<PersonMetaData> implemen
                 String fieldName = jsonParser.getCurrentName();
                 jsonParser.nextToken();
                 if (fieldName.startsWith("person_id")) {
-                    personMetaData.setPersonId(jsonParser.getValueAsInt(0));
+                    personMetaData.setId(jsonParser.getValueAsInt(0));
                 } else if (fieldName.startsWith("person_lastname")) {
-                    personMetaData.setPersonLastName(jsonParser.getValueAsString());
+                    personMetaData.setLastName(jsonParser.getValueAsString());
                 }else if (fieldName.startsWith("person_firstname")) {
-                    personMetaData.setPersonFirstName(jsonParser.getValueAsString());
+                    personMetaData.setFirstName(jsonParser.getValueAsString());
                 } else if (fieldName.startsWith("person_picture")) {
-                    personMetaData.setPersonPicture(jsonParser.getValueAsString());
+                    personMetaData.setPicture(jsonParser.getValueAsString());
                 }else if (fieldName.startsWith("person_email")) {
-                    personMetaData.setPersonEmail(jsonParser.getValueAsString());
+                    personMetaData.setEmail(jsonParser.getValueAsString());
                 }else if (fieldName.startsWith("person_phone")) {
-                    personMetaData.setPersonPhone(jsonParser.getValueAsString());
+                    personMetaData.setPhone(jsonParser.getValueAsString());
                 }else if (fieldName.startsWith("person_instagram")) {
-                    personMetaData.setPersonInstagram(jsonParser.getValueAsString());
+                    personMetaData.setInstagram(jsonParser.getValueAsString());
                 }else if (fieldName.startsWith("person_facebook")) {
-                    personMetaData.setPersonFacebook(jsonParser.getValueAsString());
+                    personMetaData.setFacebook(jsonParser.getValueAsString());
                 }else if (fieldName.startsWith("person_twitter")) {
-                    personMetaData.setPersonTwitter(jsonParser.getValueAsString());
+                    personMetaData.setTwitter(jsonParser.getValueAsString());
                 } else if (fieldName.startsWith("person_youtube")) {
-                    personMetaData.setPersonYoutube(jsonParser.getValueAsString());
+                    personMetaData.setYoutube(jsonParser.getValueAsString());
                 }else if (fieldName.startsWith("person_active")) {
-                    personMetaData.setPersonActive(jsonParser.getValueAsInt(0)==1);
+                    personMetaData.setActive(jsonParser.getValueAsInt(0)==1);
                 }
             }
 

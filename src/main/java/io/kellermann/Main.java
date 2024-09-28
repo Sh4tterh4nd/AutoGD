@@ -10,6 +10,7 @@ import io.kellermann.model.gdVerwaltung.WorshipMetaData;
 import io.kellermann.services.gdManagement.WorshipServiceApi;
 import io.kellermann.services.video.GdGenerationService;
 import io.kellermann.services.video.JaffreeFFmpegService;
+import io.kellermann.services.youtube.YoutubeUploader;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -30,13 +31,16 @@ public class Main implements CommandLineRunner {
 
     private YoutubeConfiguration configuration;
 
-    public Main(GdGenerationService gdVidGenService, VideoConfiguration videoConfig, GDManagementConfig gdConfig, WorshipServiceApi worshipServiceApi, JaffreeFFmpegService jffmpegService, YoutubeConfiguration configuration) {
+    private YoutubeUploader youtubeUploader;
+
+    public Main(GdGenerationService gdVidGenService, VideoConfiguration videoConfig, GDManagementConfig gdConfig, WorshipServiceApi worshipServiceApi, JaffreeFFmpegService jffmpegService, YoutubeConfiguration configuration, YoutubeUploader youtubeUploader) {
         this.gdVidGenService = gdVidGenService;
         this.videoConfig = videoConfig;
         this.gdConfig = gdConfig;
         this.worshipServiceApi = worshipServiceApi;
         this.jffmpegService = jffmpegService;
         this.configuration = configuration;
+        this.youtubeUploader = youtubeUploader;
     }
 
     public static void main(String[] args) {
@@ -55,9 +59,8 @@ public class Main implements CommandLineRunner {
                 .findModulesViaServiceLoader(true)
                 .modules(new JavaTimeModule())
                 .serializationInclusion(JsonInclude.Include.NON_NULL).build();
-        System.out.println(build.writerWithDefaultPrettyPrinter().writeValueAsString(worshipMetaData));
+//        System.out.println(build.writerWithDefaultPrettyPrinter().writeValueAsString(worshipMetaData));
 
-
-        System.out.println("END");
+        youtubeUploader.templateEngine(worshipMetaData);
     }
 }

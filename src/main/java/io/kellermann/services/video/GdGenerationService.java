@@ -2,7 +2,6 @@ package io.kellermann.services.video;
 
 import io.kellermann.config.VideoConfiguration;
 import io.kellermann.model.gdVerwaltung.ImageType;
-import io.kellermann.model.gdVerwaltung.Language;
 import io.kellermann.model.gdVerwaltung.WorshipMetaData;
 import io.kellermann.services.UtilityComponent;
 import io.kellermann.services.gdManagement.WorshipServiceApi;
@@ -34,8 +33,8 @@ public class GdGenerationService {
         setupWorkspace();
 
         Path tempWorkspace = videoConfiguration.getTempWorkspace();
-        Path albumartImage = tempWorkspace.resolve("albumart_" + worshipMetaData.getSeries().getSeriesAlbumartLanguage(Language.fromString(worshipMetaData.getServiceLanguage())));
-        Path widescreenImage = tempWorkspace.resolve("widescreen_" + worshipMetaData.getSeries().getSeriesAlbumartLanguage(Language.fromString(worshipMetaData.getServiceLanguage())));
+        Path albumartImage = tempWorkspace.resolve("albumart_" + worshipMetaData.getSeries().getAlbumartLanguage(worshipMetaData.getServiceLanguage()));
+        Path widescreenImage = tempWorkspace.resolve("widescreen_" + worshipMetaData.getSeries().getAlbumartLanguage(worshipMetaData.getServiceLanguage()));
         Path imageIntro = tempWorkspace.resolve("image_intro.mp4");
         Path renderedIntro = tempWorkspace.resolve("rendered_intro.mp4");
 

@@ -28,8 +28,10 @@ autogd:
     codec: "h264_nvenc"
 
   youtube:
+    title: |-
+     [%SERIES_TITLE_LANGUAGE_[%SERVICE_LANGUAGE%]%]: [%SERVICE_TITLE_BY_LANGUAGE_[%SERVICE_LANGUAGE%]%]
     description: |-
-      Gottesdienst vom [%DATUM%] mit [%PASTOR%]
+      Gottesdienst vom [%START_DATE%] mit [%PERSON_FIRST_NAME%] [%PERSON_LAST_NAME%]
       Silbern Church, Dietikon
 
       Bleib mit uns in Verbindung:
@@ -41,6 +43,13 @@ autogd:
 
       Mehr über die Silbern Church: https://www.silbern.church/
       Möchtest du die Silbern Church unterstützen? https://www.silbern.church/spenden/
+    tags:
+      - Gottesdienst
+      - Church
+      - Service
+      - Silbern Church
+    for-kids: false
+    privacy-status: public
   gdverwaltung:
     credentials:
       username:

@@ -1,9 +1,15 @@
 package io.kellermann.model.gdVerwaltung;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public enum Language {
+    @JsonProperty("de")
     GERMAN("de"),
+    @JsonProperty("en")
     ENGLISH("en"),
+    @JsonProperty("pt")
     PORTUGUESE("pt"),
+    @JsonProperty("es")
     SPANISH("es");
 
     Language(String langString) {

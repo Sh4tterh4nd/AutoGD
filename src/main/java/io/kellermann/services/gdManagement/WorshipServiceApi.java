@@ -51,7 +51,7 @@ public class WorshipServiceApi {
     public byte[] getSeriesImage(ImageType imageType, WorshipMetaData worshipMetaData) {
         Mono<byte[]> mono = webClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .pathSegment("media", "series",imageType.getPath(),worshipMetaData.getServiceLanguage(),worshipMetaData.getSeries().getImageByType(Language.fromString(worshipMetaData.getServiceLanguage()), imageType))
+                        .pathSegment("media", "series",imageType.getPath(),worshipMetaData.getServiceLanguage().getLanguageString() ,worshipMetaData.getSeries().getImageByType(worshipMetaData.getServiceLanguage(), imageType))
                         .build())
                 .retrieve()
                 .bodyToMono(byte[].class);

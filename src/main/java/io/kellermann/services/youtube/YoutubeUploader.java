@@ -22,6 +22,7 @@ import com.google.api.client.http.InputStreamContent;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.*;
 import com.google.common.collect.Lists;
+import io.kellermann.config.YoutubeConfiguration;
 import io.kellermann.model.gdVerwaltung.Language;
 import io.kellermann.model.gdVerwaltung.WorshipMetaData;
 import org.springframework.stereotype.Service;
@@ -29,19 +30,32 @@ import org.springframework.stereotype.Service;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class YoutubeUploader {
 
     private static YouTube youtube;
-    private  final String VIDEO_FILE_FORMAT = "video/*";
+    private final String VIDEO_FILE_FORMAT = "video/*";
 
     private YoutubeAuthentication ytYoutubeAuthentication;
+    private YoutubeConfiguration ytYoutubeConfiguration;
 
-    public YoutubeUploader(YoutubeAuthentication ytYoutubeAuthentication) {
+    private TemplatingEngine templatingEngine;
+
+    public YoutubeUploader(YoutubeAuthentication ytYoutubeAuthentication, YoutubeConfiguration ytYoutubeConfiguration, TemplatingEngine templatingEngine) {
         this.ytYoutubeAuthentication = ytYoutubeAuthentication;
+        this.ytYoutubeConfiguration = ytYoutubeConfiguration;
+        this.templatingEngine = templatingEngine;
+    }
+
+    public void templateEngine(WorshipMetaData worshipMetaData) {
+        try {
+            System.out.println(textTemplating(ytYoutubeConfiguration.getDescription(), worshipMetaData));
+            System.out.println(textTemplating(ytYoutubeConfiguration.getTitle(), worshipMetaData));
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void uploadToYoutube(Path videoPath, WorshipMetaData worshipMetaData) {
@@ -70,21 +84,15 @@ public class YoutubeUploader {
             // Most of the video's metadata is set on the VideoSnippet object.
             VideoSnippet snippet = new VideoSnippet();
 
-            snippet.setTitle(worshipMetaData.getServiceTitle(Language.GERMAN));
-            snippet.setDescription(textTemplating("Description Text", worshipMetaData));
+            snippet.setTitle(templatingEngine.processTemplateWithKeyModel(ytYoutubeConfiguration.getTitle(), worshipMetaData));
+            snippet.setDescription(templatingEngine.processTemplateWithKeyModel(ytYoutubeConfiguration.getDescription(), worshipMetaData));
 
-            // Set the keyword tags that you want to associate with the video.
-            List<String> tags = new ArrayList<String>();
-            tags.add("Gottesdienst");
-
-
-
-            snippet.setTags(tags);
+            snippet.setTags(ytYoutubeConfiguration.getTags());
 
             // Add the completed snippet object to the video resource.
             videoObjectDefiningMetadata.setSnippet(snippet);
 
-            InputStreamContent mediaContent = new InputStreamContent(VIDEO_FILE_FORMAT,  new FileInputStream(videoPath.toFile()));
+            InputStreamContent mediaContent = new InputStreamContent(VIDEO_FILE_FORMAT, new FileInputStream(videoPath.toFile()));
 
 
             YouTube.Videos.Insert videoInsert = youtube.videos()
@@ -104,7 +112,6 @@ public class YoutubeUploader {
                             System.out.println("Initiation Completed");
                             break;
                         case MEDIA_IN_PROGRESS:
-//                            System.out.println("Upload in progress");
                             System.out.println("Upload percentage: " + uploader.getProgress());
                             break;
                         case MEDIA_COMPLETE:
@@ -142,9 +149,9 @@ public class YoutubeUploader {
         }
     }
 
-    public String textTemplating(String text, WorshipMetaData worshipMetaData) {
-
-
-        return text;
+    public String textTemplating(String text, WorshipMetaData worshipMetaData) throws IllegalAccessException {
+        return templatingEngine.processTemplateWithKeyModel(text, worshipMetaData);
     }
+
+
 }
