@@ -1,6 +1,5 @@
 package io.kellermann.config;
 
-import net.bramp.ffmpeg.nut.PacketHeader;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -11,9 +10,6 @@ import java.time.LocalTime;
 @Component
 @ConfigurationProperties(prefix = "autogd.video")
 public class VideoConfiguration {
-    //TODO remove ffmpeg paths
-    private String ffmpegLocation;
-    private String ffprobeLocation;
 
     private Path inputWorkspace = Paths.get("");
     private Path tempWorkspace = Paths.get("");
@@ -136,21 +132,6 @@ public class VideoConfiguration {
         this.tempWorkspace = tempWorkspace;
     }
 
-    public String getFfmpegLocation() {
-        return ffmpegLocation;
-    }
-
-    public void setFfmpegLocation(String ffmpegLocation) {
-        this.ffmpegLocation = ffmpegLocation;
-    }
-
-    public String getFfprobeLocation() {
-        return ffprobeLocation;
-    }
-
-    public void setFfprobeLocation(String ffprobeLocation) {
-        this.ffprobeLocation = ffprobeLocation;
-    }
 
     public Path getInputWorkspace() {
         return inputWorkspace;
