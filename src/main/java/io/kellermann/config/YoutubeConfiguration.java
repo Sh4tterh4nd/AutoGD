@@ -11,11 +11,12 @@ import java.util.List;
 public class YoutubeConfiguration {
     private String title;
     private String description;
-    private String clientID;
+    private String clientId;
     private String clientSecret;
     private List<String> tags = new ArrayList<>();
     private Boolean forKids = false;
     private String privacyStatus;
+
 
 
     public YoutubeConfiguration() {
@@ -61,12 +62,12 @@ public class YoutubeConfiguration {
         this.description = description;
     }
 
-    public String getClientID() {
-        return clientID;
+    public String getClientId() {
+        return clientId;
     }
 
-    public void setClientID(String clientID) {
-        this.clientID = clientID;
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
     }
 
     public String getClientSecret() {
