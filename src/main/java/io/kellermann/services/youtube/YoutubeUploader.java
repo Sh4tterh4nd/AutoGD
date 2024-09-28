@@ -49,15 +49,6 @@ public class YoutubeUploader {
         this.templatingEngine = templatingEngine;
     }
 
-    public void templateEngine(WorshipMetaData worshipMetaData) {
-        try {
-            System.out.println(textTemplating(ytYoutubeConfiguration.getDescription(), worshipMetaData));
-            System.out.println(textTemplating(ytYoutubeConfiguration.getTitle(), worshipMetaData));
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public void uploadToYoutube(Path videoPath, WorshipMetaData worshipMetaData) {
         List<String> scopes = Lists.newArrayList("https://www.googleapis.com/auth/youtube.upload");
 
@@ -94,6 +85,7 @@ public class YoutubeUploader {
 
             InputStreamContent mediaContent = new InputStreamContent(VIDEO_FILE_FORMAT, new FileInputStream(videoPath.toFile()));
 
+            mediaContent.setLength(videoPath.toFile().length());
 
             YouTube.Videos.Insert videoInsert = youtube.videos()
                     .insert("snippet,statistics,status", videoObjectDefiningMetadata, mediaContent);
@@ -148,10 +140,5 @@ public class YoutubeUploader {
             t.printStackTrace();
         }
     }
-
-    public String textTemplating(String text, WorshipMetaData worshipMetaData) throws IllegalAccessException {
-        return templatingEngine.processTemplateWithKeyModel(text, worshipMetaData);
-    }
-
 
 }

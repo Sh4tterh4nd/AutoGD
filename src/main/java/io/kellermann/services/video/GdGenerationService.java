@@ -27,8 +27,7 @@ public class GdGenerationService {
     }
 
 
-
-    public void gemerateGDVideo(WorshipMetaData worshipMetaData) throws IOException {
+    public Path gemerateGDVideo(WorshipMetaData worshipMetaData) throws IOException {
 
         setupWorkspace();
 
@@ -59,10 +58,11 @@ public class GdGenerationService {
 
 
         //Generate podcast
-        jaffreeFFmpegService.convertToWav(videoConfiguration.getOutput().resolve("finalGD.mp4"),videoConfiguration.getWavTarget().resolve("podcast.wav"));
-
+        jaffreeFFmpegService.convertToWav(videoConfiguration.getOutput().resolve("finalGD.mp4"), videoConfiguration.getWavTarget().resolve("podcast.wav"));
 
         setupWorkspace();
+
+        return videoConfiguration.getOutput().resolve("finalGD.mp4");
     }
 
     public void setupWorkspace() {

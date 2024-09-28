@@ -36,7 +36,7 @@ public class JaffreeFFmpegService {
                         .setFrameRate(30)
                         .setCodec(StreamType.VIDEO, "libx264")
                         .setCodec(StreamType.AUDIO, "aac")
-                        .addArguments("-vf", "fade=out:st=" + (-0.5) + ":d=0.5")
+                        .addArguments("-vf", "fade=out:st=" + (duration-0.5) + ":d=0.5")
                         .setFormat("mp4")
                         .addArgument("-shortest")
                 )

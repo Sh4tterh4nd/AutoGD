@@ -17,6 +17,8 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
+import java.nio.file.Path;
+
 @SpringBootApplication
 @AutoConfiguration
 public class Main implements CommandLineRunner {
@@ -51,16 +53,8 @@ public class Main implements CommandLineRunner {
     public void run(String... args) throws Exception {
         WorshipMetaData worshipMetaData = worshipServiceApi.getMostRecentWorship();
 
+        Path outputPath = gdVidGenService.gemerateGDVideo(worshipMetaData);
 
-//        System.out.println(configuration.getDescription());
-
-//        gdVidGenService.gemerateGDVideo(worshipMetaData);
-        ObjectMapper build = new Jackson2ObjectMapperBuilder()
-                .findModulesViaServiceLoader(true)
-                .modules(new JavaTimeModule())
-                .serializationInclusion(JsonInclude.Include.NON_NULL).build();
-//        System.out.println(build.writerWithDefaultPrettyPrinter().writeValueAsString(worshipMetaData));
-
-        youtubeUploader.templateEngine(worshipMetaData);
+        youtubeUploader.uploadToYoutube(outputPath, worshipMetaData);
     }
 }
