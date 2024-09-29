@@ -9,9 +9,6 @@ spring:
 
 autogd:
   video:
-    ffmpeg-location: C:\ProgramData\chocolatey\bin\ffmpeg.exe
-    ffprobe-location: C:\ProgramData\chocolatey\bin\ffprobe.exe
-
     input-workspace: C:\Users\Arieh\Desktop\NewGD
     temp-workspace: ${autogd.video.input-workspace}\tmp
     resources:  ${autogd.video.input-workspace}\resources
