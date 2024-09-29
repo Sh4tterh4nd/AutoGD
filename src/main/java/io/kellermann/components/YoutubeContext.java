@@ -13,8 +13,6 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.DataStore;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.youtube.YouTube;
-import com.google.common.collect.Lists;
-import io.kellermann.services.youtube.YoutubeAuthentication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -42,7 +40,7 @@ public class YoutubeContext {
 
         String credentialDatastore = "uploadvideo";
         // Load client secrets.
-        Reader clientSecretReader = new InputStreamReader(YoutubeAuthentication.class.getResourceAsStream("/client_secrets.json"));
+        Reader clientSecretReader = new InputStreamReader(YoutubeContext.class.getResourceAsStream("/client_secrets.json"));
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, clientSecretReader);
 
         // This creates the credentials datastore at ~/.oauth-credentials/${credentialDatastore}
