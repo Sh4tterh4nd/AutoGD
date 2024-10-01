@@ -10,6 +10,7 @@ import io.kellermann.model.gdVerwaltung.WorshipMetaData;
 import io.kellermann.services.gdManagement.WorshipServiceApi;
 import io.kellermann.services.video.GdGenerationService;
 import io.kellermann.services.video.JaffreeFFmpegService;
+import io.kellermann.services.youtube.ThumbnailService;
 import io.kellermann.services.youtube.YoutubeUploader;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -17,7 +18,10 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalTime;
 import java.util.Objects;
 
 @SpringBootApplication
@@ -36,7 +40,11 @@ public class Main implements CommandLineRunner {
 
     private YoutubeUploader youtubeUploader;
 
-    public Main(GdGenerationService gdVidGenService, VideoConfiguration videoConfig, GDManagementConfig gdConfig, WorshipServiceApi worshipServiceApi, JaffreeFFmpegService jffmpegService, YoutubeConfiguration configuration, YoutubeUploader youtubeUploader) {
+    private ThumbnailService thumbnailService;
+
+    public Main(GdGenerationService gdVidGenService, VideoConfiguration videoConfig, GDManagementConfig gdConfig,
+                WorshipServiceApi worshipServiceApi, JaffreeFFmpegService jffmpegService, YoutubeConfiguration configuration, YoutubeUploader youtubeUploader,
+                ThumbnailService thumbnailService) {
         this.gdVidGenService = gdVidGenService;
         this.videoConfig = videoConfig;
         this.gdConfig = gdConfig;
@@ -44,6 +52,7 @@ public class Main implements CommandLineRunner {
         this.jffmpegService = jffmpegService;
         this.configuration = configuration;
         this.youtubeUploader = youtubeUploader;
+        this.thumbnailService = thumbnailService;
     }
 
     public static void main(String[] args) {
@@ -54,12 +63,27 @@ public class Main implements CommandLineRunner {
     public void run(String... args) throws Exception {
         WorshipMetaData worshipMetaData = worshipServiceApi.getMostRecentWorship();
 
-        if (Objects.nonNull(worshipMetaData)) {
-            Path outputPath = gdVidGenService.gemerateGDVideo(worshipMetaData);
-            youtubeUploader.uploadToYoutube(outputPath, worshipMetaData);
-        } else {
-            throw new Exception("Couldn't find any worship data. Try specify date and time of worship in the application.yml");
-        }
+        Path path = Paths.get("C:\\Users\\Arieh\\Desktop\\NewGD\\tmp\\thumb");
+        Files.walk(path).filter(Files::isRegularFile).forEach(s->thumbnailService.detectFace(s,worshipMetaData));
+
+//        thumbnailService.detectFace(null);
+
+//        jffmpegService.generateImageFromVideo(
+//                LocalTime.of(0,23,10),
+////                LocalTime.of(0,54,20),
+//                LocalTime.of(0,30,20),
+//                Paths.get("C:\\Users\\Arieh\\Desktop\\NewGD\\recordings\\LIVE - 2024.09.15 - 09-56-45 AM.mp4"),
+//                Paths.get("C:\\Users\\Arieh\\Desktop\\NewGD\\tmp\\thumb"),
+//                0.25);
+
+//
+//
+//        if (Objects.nonNull(worshipMetaData)) {
+//            Path outputPath = gdVidGenService.gemerateGDVideo(worshipMetaData);
+//            youtubeUploader.uploadToYoutube(outputPath, worshipMetaData);
+//        } else {
+//            throw new Exception("Couldn't find any worship data. Try specify date and time of worship in the application.yml");
+//        }
 
     }
 }

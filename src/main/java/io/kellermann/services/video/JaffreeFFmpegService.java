@@ -36,7 +36,7 @@ public class JaffreeFFmpegService {
                         .setFrameRate(30)
                         .setCodec(StreamType.VIDEO, "libx264")
                         .setCodec(StreamType.AUDIO, "aac")
-                        .addArguments("-vf", "fade=out:st=" + (duration-0.5) + ":d=0.5")
+                        .addArguments("-vf", "fade=out:st=" + (duration - 0.5) + ":d=0.5")
                         .setFormat("mp4")
                         .addArgument("-shortest")
                 )
@@ -220,4 +220,27 @@ public class JaffreeFFmpegService {
     private double getSecondsWithPeriod(LocalTime localTime) {
         return (localTime.toNanoOfDay() / 1000000000.0);
     }
+
+
+    public void generateImageFromVideo(LocalTime start, LocalTime end, Path video, Path outDir, double frameRate) {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss.SS");
+        FFmpeg
+                .atPath()
+                .addInput(UrlInput.fromPath(video)
+                        .addArguments("-ss", start.format(dateTimeFormatter))
+                        .addArguments("-to", end.format(dateTimeFormatter)))
+                .addOutput(UrlOutput.toPath(outDir.resolve("out000%d.jpg"))
+//                        .addArguments("-vsync", "0")
+                        .addArguments("-qscale:v", "4")
+//                        .addArgument("-copyts")
+                        .addArguments("-vf", "fps="+ frameRate))
+                .setOutputListener(new OutputListener() {
+                    @Override
+                    public void onOutput(String s) {
+                        System.out.println(s);
+                    }
+                })
+                .execute();
+    }
+
 }
