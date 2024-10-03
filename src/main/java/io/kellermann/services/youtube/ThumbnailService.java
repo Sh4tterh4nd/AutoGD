@@ -2,8 +2,13 @@ package io.kellermann.services.youtube;
 
 import io.kellermann.model.gdVerwaltung.WorshipMetaData;
 import jakarta.annotation.PostConstruct;
-import org.opencv.core.*;
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfRect;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
@@ -13,10 +18,17 @@ import org.springframework.stereotype.Service;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.font.TextLayout;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 
 @Service
 public class ThumbnailService {
@@ -119,9 +131,9 @@ public class ThumbnailService {
 
         try {
             drawSeriesTitle(bufferedImage, worshipMetaData.getSeries().getTitleLanguage(worshipMetaData.getServiceLanguage()));
-            drawTitle(bufferedImage, worshipMetaData.getServiceTitle(worshipMetaData.getServiceLanguage()));
-            drawTitle(bufferedImage, "Wie wir in unseren\nBeziehungen Frieden Stiften");
-            drawPastor(bufferedImage, worshipMetaData.getPerson().getFirstName() + " " + worshipMetaData.getPerson().getLastName() );
+//            drawTitle(bufferedImage, worshipMetaData.getServiceTitle(worshipMetaData.getServiceLanguage()));
+            drawTitle(bufferedImage, "Wie wir in unseren - Beziehungen Frieden Stiften Frieden Stiften - minus Frieden");
+            drawPastor(bufferedImage, worshipMetaData.getPerson().getFirstName() + " " + worshipMetaData.getPerson().getLastName());
             insertImage(bufferedImage, ImageIO.read(Paths.get("C:\\Users\\Arieh\\Desktop\\silbern_small.png").toFile()), 0.86);
 
             ImageIO.write(bufferedImage, "jpg", imagePath.getParent().getParent().resolve("cropped").resolve(imagePath.getFileName()).toFile());
@@ -134,40 +146,60 @@ public class ThumbnailService {
 
     public void drawSeriesTitle(BufferedImage bf, String seriesText) {
         var font = new Font("Source Sans 3 Regular", Font.PLAIN, 100);
-        drawText(bf, seriesText, font, .24);
+        drawText(bf, seriesText, font, .27, .27);
     }
 
     public void drawPastor(BufferedImage bf, String title) {
         var font = new Font("Source Sans 3 Regular", Font.PLAIN, 92);
-        drawText(bf, title, font, .805);
+        drawText(bf, title, font, .835, .835);
     }
 
     public void drawTitle(BufferedImage bf, String title) {
         var font = new Font("Source Sans 3 ExtraLight", Font.PLAIN, 68);
-        drawText(bf, title, font, .52);
+        drawText(bf, title, font, .27, .835);
     }
 
 
-
-
-    public BufferedImage drawText(BufferedImage bufferedImage, String text, Font font, double heightPosition) {
-
+    public void drawText(BufferedImage bufferedImage, String text, Font font, double startPosition, double endPosition) {
         Graphics2D g = bufferedImage.createGraphics();
         g.setFont(font);
         g.setPaint(Color.BLACK);
         String upperCase = text.toUpperCase();
 
         var textLayout = new TextLayout(upperCase, g.getFont(), g.getFontRenderContext());
+
         double textWidth = textLayout.getBounds().getWidth();
-
-        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-                RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-
-        g.drawString(upperCase, bufferedImage.getWidth() / 4 - (int) textWidth / 2,
-                (int) (bufferedImage.getHeight() * heightPosition));
+        double textHeight = textLayout.getBounds().getHeight();
+        double heightPosition = (startPosition + endPosition) / 2.0;
 
 
-        return bufferedImage;
+        if (textLayout.getBounds().getWidth() > (bufferedImage.getWidth() / 2.0 * .95)) {
+            g.drawLine(100, (int) (bufferedImage.getHeight() * heightPosition), 1800, (int) (bufferedImage.getHeight() * heightPosition));
+            textHeight = textHeight * 1.25;
+            List<String> titleLines = getTitleLines(bufferedImage, font, List.of(text));
+            double textBlockHeight = (int) textHeight * (titleLines.size()+1);
+            int yBlockAnchor = (int) ((bufferedImage.getHeight() * heightPosition) - textBlockHeight / 2.0);
+
+            for (String titleLine : titleLines) {
+                yBlockAnchor = (int) (yBlockAnchor + textHeight);
+                double yPercentage = yBlockAnchor / (double) bufferedImage.getHeight();
+                drawText(bufferedImage, titleLine, font, yPercentage, yPercentage);
+            }
+            return;
+        }
+
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        int xAnchor = (int) (bufferedImage.getWidth() / 4.0 - textWidth / 2.0);
+        int yAnchor = (int) ((bufferedImage.getHeight() * heightPosition) - textHeight / 2.0);
+
+        textLayout.draw(g, xAnchor, yAnchor);
+        g.setColor(Color.red);
+        g.drawLine(100, (int) yAnchor, 1800, (int) yAnchor);
+        g.drawLine(100, (int) (yAnchor-textHeight), 1800, (int) (yAnchor-textHeight));
+        g.setColor(Color.black);
+
+
+//        g.drawString(upperCase, xAnchor, yAnchor);
     }
 
 
@@ -178,6 +210,60 @@ public class ThumbnailService {
         return main;
     }
 
+
+    public List<String> getTitleLines(BufferedImage bf, Font font, List<String> longTitles) {
+        List<String> titleLines = new ArrayList<>();
+        int lines = longTitles.size() + 1;
+        String fullTitle = listToString(longTitles);
+        int startInd = 0;
+        int whiteSpaceIndex = getClosestWhitespaceForFirstPart(fullTitle, lines);
+        for (int i = 0; i < lines - 1; i++) {
+            titleLines.add(fullTitle.substring(startInd, whiteSpaceIndex));
+            startInd = whiteSpaceIndex;
+            if (lines - (i + 1) > 1) {
+                whiteSpaceIndex = getClosestWhitespaceForFirstPart(fullTitle.substring(startInd), lines - (i + 1)) + startInd;
+            }
+        }
+        titleLines.add(fullTitle.substring(startInd));
+        Graphics2D graphics = bf.createGraphics();
+        graphics.setFont(font);
+        for (String titleLine : titleLines) {
+            TextLayout textLayout = new TextLayout(titleLine.toUpperCase(), graphics.getFont(), graphics.getFontRenderContext());
+            if (textLayout.getBounds().getWidth() > (bf.getWidth() / 2.0 * .95)) {
+                return getTitleLines(bf, font, titleLines);
+            }
+        }
+
+        return titleLines.stream().map(s -> s.replaceAll("(^[\\s–—―‒-]+)|([\\s–—―‒-]+$)", "")).toList();
+    }
+
+    public String listToString(List<String> list) {
+        return list.stream()
+                .map(n -> String.valueOf(n))
+                .collect(Collectors.joining(" ", "", ""));
+    }
+
+    public int getClosestWhitespaceForFirstPart(String text, int parts) {
+
+        int length = text.length();
+        int initialIndex = (int) ((double) length / (double) parts);
+        int searchIndexUpper = (int) ((double) length / (double) parts);
+        int searchIndexLower = (int) ((double) length / (double) parts);
+        char[] charArray = text.toCharArray();
+        while (charArray[searchIndexUpper] != ' ') {
+            searchIndexUpper++;
+        }
+        while (charArray[searchIndexLower] != ' ') {
+            searchIndexLower--;
+        }
+
+
+        if (initialIndex - searchIndexLower > searchIndexUpper - initialIndex) {
+            return searchIndexUpper;
+        } else {
+            return searchIndexLower;
+        }
+    }
 
     @PostConstruct
     public void loadFonts() {
