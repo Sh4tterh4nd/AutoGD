@@ -1,5 +1,6 @@
 package io.kellermann.services.youtube;
 
+import io.kellermann.config.VideoConfiguration;
 import io.kellermann.model.gdVerwaltung.WorshipMetaData;
 import jakarta.annotation.PostConstruct;
 import org.opencv.core.Core;
@@ -15,18 +16,18 @@ import org.opencv.objdetect.CascadeClassifier;
 import org.opencv.objdetect.Objdetect;
 import org.springframework.stereotype.Service;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
 import java.awt.*;
 import java.awt.font.TextLayout;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 
@@ -34,18 +35,20 @@ import java.util.stream.Collectors;
 public class ThumbnailService {
 
 
+    private final VideoConfiguration videoConfiguration;
+    private  CascadeClassifier classifier;
+
+    public ThumbnailService(VideoConfiguration videoConfiguration) {
+        this.videoConfiguration = videoConfiguration;
+    }
+
     public void detectFace(Path path, WorshipMetaData worshipMetaData) {
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
         String file = path.toFile().getAbsolutePath();
         Mat imageMat = Imgcodecs.imread(file);
 
         // Instantiating the CascadeClassifier
-        String xmlFile = "C:\\Users\\Arieh\\IdeaProjects\\AutoGD\\src\\main\\resources\\lbpcascade_frontalface.xml";
         int minFaceSize = Math.round(imageMat.rows() * 0.1f);
-
-        CascadeClassifier classifier = new CascadeClassifier(xmlFile);
-
         // Detecting the face in the snap
         MatOfRect faceDetections = new MatOfRect();
         classifier.detectMultiScale(imageMat,
@@ -88,7 +91,7 @@ public class ThumbnailService {
             );
             if (isCandidate(faceRect, searchRect)) {
                 try {
-                    thumbnailDemo(path, centerOfRect, worshipMetaData);
+                    createThumbnail(path, centerOfRect, worshipMetaData);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -113,16 +116,16 @@ public class ThumbnailService {
         return new Point(centerX, centerY);
     }
 
-    public void thumbnailDemo(Path imagePath, Point centerOfFace, WorshipMetaData worshipMetaData) throws IOException {
-        BufferedImage bufferedImage = new BufferedImage(1920, 1080, BufferedImage.TYPE_INT_RGB);
+    public void createThumbnail(Path imagePath, Point centerOfFace, WorshipMetaData worshipMetaData) throws IOException {
         BufferedImage screenShot = ImageIO.read(imagePath.toFile());
+        BufferedImage bufferedImage = new BufferedImage(screenShot.getWidth(), screenShot.getHeight(), BufferedImage.TYPE_INT_RGB);
         int fiftyPercentageWidth = bufferedImage.getWidth() / 2;
 
         BufferedImage croppedScreenshot = screenShot.getSubimage(
                 (int) (centerOfFace.x - (fiftyPercentageWidth / 2.0)),
                 0,
                 fiftyPercentageWidth,
-                1080);
+                screenShot.getHeight());
         Graphics2D graphics = (Graphics2D) bufferedImage.getGraphics();
         graphics.setPaint(new Color(255, 255, 255));
         graphics.fillRect(0, 0, bufferedImage.getWidth(), bufferedImage.getHeight());
@@ -131,12 +134,21 @@ public class ThumbnailService {
 
         try {
             drawSeriesTitle(bufferedImage, worshipMetaData.getSeries().getTitleLanguage(worshipMetaData.getServiceLanguage()));
-//            drawTitle(bufferedImage, worshipMetaData.getServiceTitle(worshipMetaData.getServiceLanguage()));
-            drawTitle(bufferedImage, "Wie wir in unseren - Beziehungen Frieden Stiften Frieden Stiften - minus Frieden");
+            drawTitle(bufferedImage, worshipMetaData.getServiceTitle(worshipMetaData.getServiceLanguage()));
             drawPastor(bufferedImage, worshipMetaData.getPerson().getFirstName() + " " + worshipMetaData.getPerson().getLastName());
-            insertImage(bufferedImage, ImageIO.read(Paths.get("C:\\Users\\Arieh\\Desktop\\silbern_small.png").toFile()), 0.86);
 
-            ImageIO.write(bufferedImage, "jpg", imagePath.getParent().getParent().resolve("cropped").resolve(imagePath.getFileName()).toFile());
+            insertImage(bufferedImage, ImageIO.read(videoConfiguration.getResources().resolve("silbern_small.png").toFile()), 0.86);
+
+
+            ImageWriter jpgWriter = ImageIO.getImageWritersByFormatName("jpg").next();
+            ImageWriteParam jpgWriteParam = jpgWriter.getDefaultWriteParam();
+            jpgWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+            jpgWriteParam.setCompressionQuality(1f);
+
+            jpgWriter.setOutput(ImageIO.createImageOutputStream(imagePath.getParent().getParent().resolve("cropped").resolve(imagePath.getFileName()).toFile()));
+            IIOImage outputImage = new IIOImage(bufferedImage, null, null);
+            jpgWriter.write(null, outputImage, jpgWriteParam);
+            jpgWriter.dispose();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -146,17 +158,17 @@ public class ThumbnailService {
 
     public void drawSeriesTitle(BufferedImage bf, String seriesText) {
         var font = new Font("Source Sans 3 Regular", Font.PLAIN, 100);
-        drawText(bf, seriesText, font, .27, .27);
+        drawText(bf, seriesText, font, .205, .205);
     }
 
     public void drawPastor(BufferedImage bf, String title) {
         var font = new Font("Source Sans 3 Regular", Font.PLAIN, 92);
-        drawText(bf, title, font, .835, .835);
+        drawText(bf, title, font, .775, .775);
     }
 
     public void drawTitle(BufferedImage bf, String title) {
         var font = new Font("Source Sans 3 ExtraLight", Font.PLAIN, 68);
-        drawText(bf, title, font, .27, .835);
+        drawText(bf, title, font, .215, .775);
     }
 
 
@@ -174,11 +186,10 @@ public class ThumbnailService {
 
 
         if (textLayout.getBounds().getWidth() > (bufferedImage.getWidth() / 2.0 * .95)) {
-            g.drawLine(100, (int) (bufferedImage.getHeight() * heightPosition), 1800, (int) (bufferedImage.getHeight() * heightPosition));
-            textHeight = textHeight * 1.25;
+            textHeight = textHeight * 1.3;
             List<String> titleLines = getTitleLines(bufferedImage, font, List.of(text));
-            double textBlockHeight = (int) textHeight * (titleLines.size()+1);
-            int yBlockAnchor = (int) ((bufferedImage.getHeight() * heightPosition) - textBlockHeight / 2.0);
+            double textBlockHeight = (int) textHeight * (titleLines.size());
+            int yBlockAnchor = (int) ((bufferedImage.getHeight() * heightPosition) - textBlockHeight / 2.0 - textHeight / 2.0);
 
             for (String titleLine : titleLines) {
                 yBlockAnchor = (int) (yBlockAnchor + textHeight);
@@ -189,17 +200,12 @@ public class ThumbnailService {
         }
 
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+
         int xAnchor = (int) (bufferedImage.getWidth() / 4.0 - textWidth / 2.0);
-        int yAnchor = (int) ((bufferedImage.getHeight() * heightPosition) - textHeight / 2.0);
+        int yAnchor = (int) ((bufferedImage.getHeight() * heightPosition) + textHeight / 2.0);
 
-        textLayout.draw(g, xAnchor, yAnchor);
-        g.setColor(Color.red);
-        g.drawLine(100, (int) yAnchor, 1800, (int) yAnchor);
-        g.drawLine(100, (int) (yAnchor-textHeight), 1800, (int) (yAnchor-textHeight));
-        g.setColor(Color.black);
-
-
-//        g.drawString(upperCase, xAnchor, yAnchor);
+        g.drawString(text.toUpperCase(), xAnchor, yAnchor);
     }
 
 
@@ -266,14 +272,19 @@ public class ThumbnailService {
     }
 
     @PostConstruct
-    public void loadFonts() {
+    public void prepareThumbnailEngine() {
         GraphicsEnvironment ge = null;
         try {
+//            -Djava.library.path=C:\opencv\opencv\build\java\x64
+            System.load(new File("C:\\opencv\\opencv\\build\\java\\x64\\opencv_java490.dll").toString());
+//            System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+            String xmlFile = videoConfiguration.getResources().resolve("lbpcascade_frontalface.xml").toFile().toString();
+            classifier = new CascadeClassifier(xmlFile);
             ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
             ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, this.getClass().getResourceAsStream("/fonts/SourceSans3-ExtraLight.ttf")));
             ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, this.getClass().getResourceAsStream("/fonts/SourceSans3-Regular.ttf")));
-        } catch (FontFormatException e) {
-        } catch (IOException e) {
+
+        } catch (Exception e) {
         }
     }
 }

@@ -64,18 +64,18 @@ public class Main implements CommandLineRunner {
         WorshipMetaData worshipMetaData = worshipServiceApi.getMostRecentWorship();
 
         Path path = Paths.get("C:\\Users\\Arieh\\Desktop\\NewGD\\tmp\\thumb");
-        Files.walk(path).filter(Files::isRegularFile).forEach(s->thumbnailService.detectFace(s,worshipMetaData));
 
-//        thumbnailService.detectFace(null);
+
 
 //        jffmpegService.generateImageFromVideo(
 //                LocalTime.of(0,23,10),
 ////                LocalTime.of(0,54,20),
-//                LocalTime.of(0,30,20),
+//                LocalTime.of(0,54,20),
 //                Paths.get("C:\\Users\\Arieh\\Desktop\\NewGD\\recordings\\LIVE - 2024.09.15 - 09-56-45 AM.mp4"),
 //                Paths.get("C:\\Users\\Arieh\\Desktop\\NewGD\\tmp\\thumb"),
-//                0.25);
-
+//                0.5);
+////        thumbnailService.detectFace(Paths.get("C:\\Users\\Arieh\\Desktop\\NewGD\\tmp\\thumb"), worshipMetaData)/**/;
+        Files.walk(path).filter(Files::isRegularFile).forEach(s->thumbnailService.detectFace(s,worshipMetaData));
 //
 //
 //        if (Objects.nonNull(worshipMetaData)) {
