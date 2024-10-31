@@ -3,7 +3,6 @@ package io.kellermann.services.youtube;
 import io.kellermann.config.VideoConfiguration;
 import io.kellermann.model.gdVerwaltung.WorshipMetaData;
 import jakarta.annotation.PostConstruct;
-import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Point;
@@ -14,7 +13,11 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
 import org.opencv.objdetect.Objdetect;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileCopyUtils;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -23,9 +26,10 @@ import javax.imageio.ImageWriter;
 import java.awt.*;
 import java.awt.font.TextLayout;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,7 +40,8 @@ public class ThumbnailService {
 
 
     private final VideoConfiguration videoConfiguration;
-    private  CascadeClassifier classifier;
+    private CascadeClassifier faceClassifier;
+    private CascadeClassifier eyeClassifier;
 
     public ThumbnailService(VideoConfiguration videoConfiguration) {
         this.videoConfiguration = videoConfiguration;
@@ -51,7 +56,7 @@ public class ThumbnailService {
         int minFaceSize = Math.round(imageMat.rows() * 0.1f);
         // Detecting the face in the snap
         MatOfRect faceDetections = new MatOfRect();
-        classifier.detectMultiScale(imageMat,
+        faceClassifier.detectMultiScale(imageMat,
                 faceDetections,
                 1.1,
                 10,
@@ -62,6 +67,8 @@ public class ThumbnailService {
         int faceCount = faceDetections.toArray().length;
         if (faceCount > 0) {
             Rect faceRect = faceDetections.toArray()[0];
+            Mat submat = imageMat.submat(faceRect);
+
             Imgproc.rectangle(
                     imageMat,                                               // where to draw the box
                     new Point(faceRect.x, faceRect.y),                            // bottom left
@@ -74,7 +81,6 @@ public class ThumbnailService {
 
             Rect searchRect = new Rect(new Point((imageMat.width() * percentWidth) / 2, imageMat.height() * percentHeightCutoff),
                     new Point(imageMat.width() - ((imageMat.width() * percentWidth) / 2), faceRect.height / 2.0));
-
             Imgproc.rectangle(
                     imageMat,                                               // where to draw the box
                     searchRect, // top right
@@ -90,12 +96,35 @@ public class ThumbnailService {
                     8                                                     // RGB colour
             );
             if (isCandidate(faceRect, searchRect)) {
-                try {
-                    createThumbnail(path, centerOfRect, worshipMetaData);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+
+                MatOfRect eyeDetections = new MatOfRect();
+                eyeClassifier.detectMultiScale(submat,
+                        eyeDetections,
+                        1.1,
+                        10,
+                        Objdetect.CASCADE_SCALE_IMAGE,
+                        new Size(15, 15),
+                        new Size(40, 40));
+
+                for (Rect rect : eyeDetections.toArray()) {
+                    Imgproc.rectangle(
+                            submat,                                               // where to draw the box
+                            new Point(rect.x, rect.y),                            // bottom left
+                            new Point(rect.x + rect.width, rect.y + rect.height), // top right
+                            new Scalar(0, 0, 255),
+                            3                                                     // RGB colour
+                    );
                 }
-                Imgcodecs.imwrite(path.getParent().getParent().resolve("detected").resolve(path.getFileName()).toAbsolutePath().toString(), imageMat);
+                Imgcodecs.imwrite(path.getParent().getParent().resolve("detected2").resolve(path.getFileName()).toAbsolutePath().toString(), submat);
+
+                if (eyeDetections.toArray().length > 0) {
+                    try {
+                        createThumbnail(path, centerOfRect, worshipMetaData);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    Imgcodecs.imwrite(path.getParent().getParent().resolve("detected").resolve(path.getFileName()).toAbsolutePath().toString(), imageMat);
+                }
             }
         }
 
@@ -154,7 +183,6 @@ public class ThumbnailService {
         }
 
     }
-
 
     public void drawSeriesTitle(BufferedImage bf, String seriesText) {
         var font = new Font("Source Sans 3 Regular", Font.PLAIN, 100);
@@ -273,18 +301,36 @@ public class ThumbnailService {
 
     @PostConstruct
     public void prepareThumbnailEngine() {
+        Path libPath = Paths.get("lib");
         GraphicsEnvironment ge = null;
         try {
-//            -Djava.library.path=C:\opencv\opencv\build\java\x64
-            System.load(new File("C:\\opencv\\opencv\\build\\java\\x64\\opencv_java490.dll").toString());
-//            System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-            String xmlFile = videoConfiguration.getResources().resolve("lbpcascade_frontalface.xml").toFile().toString();
-            classifier = new CascadeClassifier(xmlFile);
+            extractResourceDir("lib", libPath);
+            System.load(libPath.resolve("opencv_java490.dll").toAbsolutePath().toFile().toString());
+            String faceXML = libPath.resolve("lbpcascade_frontalface.xml").toFile().toString();
+            String eyeXML = libPath.resolve("haarcascade_eye_tree_eyeglasses.xml").toFile().toString();
+            faceClassifier = new CascadeClassifier(faceXML);
+            eyeClassifier = new CascadeClassifier(eyeXML);
             ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
             ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, this.getClass().getResourceAsStream("/fonts/SourceSans3-ExtraLight.ttf")));
             ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, this.getClass().getResourceAsStream("/fonts/SourceSans3-Regular.ttf")));
 
+
         } catch (Exception e) {
+        }
+    }
+
+    public void extractResourceDir(String resourceDir, Path target) throws IOException {
+        ClassLoader cl = this.getClass().getClassLoader();
+        ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(cl);
+        Resource[] resources = resolver.getResources("classpath:/" + resourceDir + "/**");
+        if (Files.notExists(target)) {
+            Files.createDirectories(target);
+        }
+        for (Resource resource : resources) {
+            byte[] resourceFile = FileCopyUtils.copyToByteArray(resource.getInputStream());
+            if (Files.notExists(target.resolve(resource.getFilename()))) {
+                Files.write(target.resolve(resource.getFilename()), resourceFile);
+            }
         }
     }
 }
