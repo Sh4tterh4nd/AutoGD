@@ -1,7 +1,10 @@
 package io.kellermann.services.video;
 
 import com.github.kokorin.jaffree.StreamType;
-import com.github.kokorin.jaffree.ffmpeg.*;
+import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
+import com.github.kokorin.jaffree.ffmpeg.OutputListener;
+import com.github.kokorin.jaffree.ffmpeg.UrlInput;
+import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import io.kellermann.config.VideoConfiguration;
@@ -36,7 +39,7 @@ public class JaffreeFFmpegService {
                         .setFrameRate(30)
                         .setCodec(StreamType.VIDEO, "libx264")
                         .setCodec(StreamType.AUDIO, "aac")
-                        .addArguments("-vf", "fade=out:st=" + (duration-0.5) + ":d=0.5")
+                        .addArguments("-vf", "fade=out:st=" + (duration - 0.5) + ":d=0.5")
                         .setFormat("mp4")
                         .addArgument("-shortest")
                 )
@@ -51,7 +54,6 @@ public class JaffreeFFmpegService {
     }
 
     public void concatVideoAndMergeAudio(Path output, Path audio, List<Path> videos) {
-
         FFmpeg fFmpeg = FFmpeg.atPath();
         videos.forEach(s -> fFmpeg.addInput(UrlInput.fromPath(s)));
         fFmpeg.addInput(UrlInput.fromPath(audio));
@@ -106,8 +108,9 @@ public class JaffreeFFmpegService {
                 .atPath()
                 .setOverwriteOutput(true);
         fFmpeg.addInput(UrlInput.fromPath(videos.get(0))
-                .addArguments("-hwaccel", "cuda")
-                .addArguments("-hwaccel_output_format", "cuda"));
+//                .addArguments("-hwaccel", "cuda")
+//                .addArguments("-hwaccel_output_format", "cuda")
+        );
         for (int i = 1; i < videos.size(); i++) {
             fFmpeg.addInput(UrlInput.fromPath(videos.get(i)));
         }
