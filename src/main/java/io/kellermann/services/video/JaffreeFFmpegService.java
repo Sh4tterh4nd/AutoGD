@@ -232,7 +232,7 @@ public class JaffreeFFmpegService {
                 .addInput(UrlInput.fromPath(video)
                         .addArguments("-ss", start.format(dateTimeFormatter))
                         .addArguments("-to", end.format(dateTimeFormatter)))
-                .addOutput(UrlOutput.toPath(outDir.resolve("out000%d.jpg"))
+                .addOutput(UrlOutput.toPath(outDir.resolve("out000%d.bmp"))
 //                        .addArguments("-vsync", "0")
                         .addArguments("-qscale:v", "4")
 //                        .addArgument("-copyts")
