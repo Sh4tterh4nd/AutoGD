@@ -2,6 +2,8 @@ package io.kellermann.services.youtube;
 
 import io.kellermann.config.VideoConfiguration;
 import io.kellermann.model.gdVerwaltung.WorshipMetaData;
+import io.kellermann.services.video.GdGenerationService;
+import io.kellermann.services.video.JaffreeFFmpegService;
 import jakarta.annotation.PostConstruct;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
@@ -40,20 +42,50 @@ public class ThumbnailService {
 
 
     private final VideoConfiguration videoConfiguration;
+    private JaffreeFFmpegService jaffreeFFmpegService;
+    private GdGenerationService gdGenerationService;
     private CascadeClassifier faceClassifier;
     private CascadeClassifier eyeClassifier;
 
-    public ThumbnailService(VideoConfiguration videoConfiguration) {
+    public ThumbnailService(VideoConfiguration videoConfiguration, JaffreeFFmpegService jaffreeFFmpegService, GdGenerationService gdGenerationService) {
         this.videoConfiguration = videoConfiguration;
+        this.jaffreeFFmpegService = jaffreeFFmpegService;
+        this.gdGenerationService = gdGenerationService;
     }
 
-    public void generateThumbnails(){
+    public void generateThumbnails(WorshipMetaData worshipMetaData) throws IOException {
+        Path tempWorkspace = videoConfiguration.getTempWorkspace().resolve("thumbnails");
+        Path allImages = tempWorkspace.resolve("all");
+        if (Files.notExists(tempWorkspace)) {
+            Files.createDirectories(tempWorkspace);
+            Files.createDirectories(allImages);
+        }
+        //Turn video to images
+        jaffreeFFmpegService.generateImageFromVideo(
+                videoConfiguration.getGdVideoStartTime(),
+                videoConfiguration.getGdVideoEndTime(),
+                gdGenerationService.getMainRecording(worshipMetaData),
+                allImages,
+                2);
+
+        List<Path> collect = Files.walk(allImages).filter(Files::isRegularFile).toList();
+
+        List<Path> candidates = new ArrayList<>();
+
+        for (Path path : collect) {
+            Candidate candidate = detectFace(path);
+            if (candidate.isCandidate) {
+                drawThumbnail(path,candidate.centerPoint,worshipMetaData);
+            }
+
+        }
+
 
     }
 
 
-    public void detectFace(Path path, WorshipMetaData worshipMetaData) {
-
+    public Candidate detectFace(Path path) {
+        Candidate candidate = new Candidate();
         String file = path.toFile().getAbsolutePath();
         Mat imageMat = Imgcodecs.imread(file);
 
@@ -120,19 +152,21 @@ public class ThumbnailService {
                             3                                                     // RGB colour
                     );
                 }
-                Imgcodecs.imwrite(path.getParent().getParent().resolve("detected2").resolve(path.getFileName()).toAbsolutePath().toString(), submat);
+//                Imgcodecs.imwrite(path.getParent().getParent().resolve("detected2").resolve(path.getFileName()).toAbsolutePath().toString(), submat);
 
                 if (eyeDetections.toArray().length > 0) {
-                    try {
-                        drawThumbnail(path, centerOfRect, worshipMetaData);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                    Imgcodecs.imwrite(path.getParent().getParent().resolve("detected").resolve(path.getFileName()).toAbsolutePath().toString(), imageMat);
+                    candidate.setCenterPoint(centerOfRect);
+                    return candidate;
+//                    try {
+//                        drawThumbnail(path, centerOfRect, worshipMetaData);
+//                    } catch (IOException e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                    Imgcodecs.imwrite(path.getParent().getParent().resolve("detected").resolve(path.getFileName()).toAbsolutePath().toString(), imageMat);
                 }
             }
         }
-
+        return candidate;
     }
 
     public boolean isCandidate(Rect faceRect, Rect searchRect) {
@@ -336,6 +370,24 @@ public class ThumbnailService {
             if (Files.notExists(target.resolve(resource.getFilename()))) {
                 Files.write(target.resolve(resource.getFilename()), resourceFile);
             }
+        }
+    }
+
+    class Candidate {
+        private Point centerPoint;
+        private boolean isCandidate = false;
+
+        public void setCenterPoint(Point centerPoint) {
+            isCandidate = true;
+            this.centerPoint = centerPoint;
+        }
+
+        public Point getCenterPoint() {
+            return centerPoint;
+        }
+
+        public boolean isCandidate() {
+            return isCandidate;
         }
     }
 }
