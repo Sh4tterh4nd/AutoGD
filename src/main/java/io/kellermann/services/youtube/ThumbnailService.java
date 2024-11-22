@@ -47,6 +47,11 @@ public class ThumbnailService {
         this.videoConfiguration = videoConfiguration;
     }
 
+    public void generateThumbnails(){
+
+    }
+
+
     public void detectFace(Path path, WorshipMetaData worshipMetaData) {
 
         String file = path.toFile().getAbsolutePath();
@@ -119,7 +124,7 @@ public class ThumbnailService {
 
                 if (eyeDetections.toArray().length > 0) {
                     try {
-                        createThumbnail(path, centerOfRect, worshipMetaData);
+                        drawThumbnail(path, centerOfRect, worshipMetaData);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -145,7 +150,7 @@ public class ThumbnailService {
         return new Point(centerX, centerY);
     }
 
-    public void createThumbnail(Path imagePath, Point centerOfFace, WorshipMetaData worshipMetaData) throws IOException {
+    public void drawThumbnail(Path imagePath, Point centerOfFace, WorshipMetaData worshipMetaData) throws IOException {
         BufferedImage screenShot = ImageIO.read(imagePath.toFile());
         BufferedImage bufferedImage = new BufferedImage(screenShot.getWidth(), screenShot.getHeight(), BufferedImage.TYPE_INT_RGB);
         int fiftyPercentageWidth = bufferedImage.getWidth() / 2;
