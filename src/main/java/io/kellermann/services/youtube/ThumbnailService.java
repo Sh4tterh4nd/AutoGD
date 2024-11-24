@@ -56,11 +56,16 @@ public class ThumbnailService {
     public void generateThumbnails(WorshipMetaData worshipMetaData) throws IOException {
         Path tempWorkspace = videoConfiguration.getTempWorkspace().resolve("thumbnails");
         Path allImages = tempWorkspace.resolve("all");
+        Path headSearch = tempWorkspace.resolve("head");
+        Path eyeSearch = tempWorkspace.resolve("eye");
+
         if (Files.notExists(tempWorkspace)) {
             Files.createDirectories(tempWorkspace);
             Files.createDirectories(allImages);
+            Files.createDirectories(headSearch);
+            Files.createDirectories(eyeSearch);
         }
-        //Turn video to images
+//        Turn video to images
         jaffreeFFmpegService.generateImageFromVideo(
                 videoConfiguration.getGdVideoStartTime(),
                 videoConfiguration.getGdVideoEndTime(),
@@ -75,18 +80,17 @@ public class ThumbnailService {
         for (Path path : collect) {
             Candidate candidate = detectFace(path);
             if (candidate.isCandidate) {
-                drawThumbnail(path,candidate.centerPoint,worshipMetaData);
+                drawThumbnail(path, candidate.centerPoint, worshipMetaData);
             }
 
         }
 
-
     }
 
 
-    public Candidate detectFace(Path path) {
+    public Candidate detectFace(Path source) {
         Candidate candidate = new Candidate();
-        String file = path.toFile().getAbsolutePath();
+        String file = source.toFile().getAbsolutePath();
         Mat imageMat = Imgcodecs.imread(file);
 
         // Instantiating the CascadeClassifier
@@ -152,17 +156,12 @@ public class ThumbnailService {
                             3                                                     // RGB colour
                     );
                 }
-//                Imgcodecs.imwrite(path.getParent().getParent().resolve("detected2").resolve(path.getFileName()).toAbsolutePath().toString(), submat);
+                Imgcodecs.imwrite(source.getParent().getParent().resolve("head").resolve(source.getFileName()).toAbsolutePath().toString(), submat);
 
                 if (eyeDetections.toArray().length > 0) {
                     candidate.setCenterPoint(centerOfRect);
+                    Imgcodecs.imwrite(source.getParent().getParent().resolve("eye").resolve(source.getFileName()).toAbsolutePath().toString(), imageMat);
                     return candidate;
-//                    try {
-//                        drawThumbnail(path, centerOfRect, worshipMetaData);
-//                    } catch (IOException e) {
-//                        throw new RuntimeException(e);
-//                    }
-//                    Imgcodecs.imwrite(path.getParent().getParent().resolve("detected").resolve(path.getFileName()).toAbsolutePath().toString(), imageMat);
                 }
             }
         }
@@ -213,7 +212,13 @@ public class ThumbnailService {
             jpgWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
             jpgWriteParam.setCompressionQuality(1f);
 
-            jpgWriter.setOutput(ImageIO.createImageOutputStream(imagePath.getParent().getParent().resolve("cropped").resolve(imagePath.getFileName()).toFile()));
+            Path tumbnailsOutPath = videoConfiguration.getTempWorkspace().resolve("thumbnails").resolve("candidates");
+            if (Files.notExists(tumbnailsOutPath)) {
+                Files.createDirectory(tumbnailsOutPath);
+            }
+
+
+            jpgWriter.setOutput(ImageIO.createImageOutputStream(tumbnailsOutPath.resolve(imagePath.getFileName()).toFile()));
             IIOImage outputImage = new IIOImage(bufferedImage, null, null);
             jpgWriter.write(null, outputImage, jpgWriteParam);
             jpgWriter.dispose();

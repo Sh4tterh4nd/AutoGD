@@ -14,10 +14,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.LocalTime;
+import java.util.Objects;
 
 @SpringBootApplication
 @AutoConfiguration
@@ -58,32 +56,15 @@ public class Main implements CommandLineRunner {
     public void run(String... args) throws Exception {
         WorshipMetaData worshipMetaData = worshipServiceApi.getMostRecentWorship();
 
-        Path path = Paths.get("C:\\Users\\Arieh\\Desktop\\NewGD\\tmp\\thumb");
-
         thumbnailService.generateThumbnails(worshipMetaData);
 
-//        Files.createDirectories(path);
-//        Files.createDirectories(Paths.get("C:\\Users\\Arieh\\Desktop\\NewGD\\tmp\\cropped"));
-//        Files.createDirectories(Paths.get("C:\\Users\\Arieh\\Desktop\\NewGD\\tmp\\detected"));
-//        Files.createDirectories(Paths.get("C:\\Users\\Arieh\\Desktop\\NewGD\\tmp\\detected2"));
-//        Path outputPath = gdVidGenService.gemerateGDVideo(worshipMetaData);
-//        jffmpegService.generateImageFromVideo(
-//                LocalTime.of(0,23,10),
-////                LocalTime.of(0,54,20),
-//                LocalTime.of(0,54,20),
-//                Paths.get("C:\\Users\\Arieh\\Desktop\\NewGD\\recordings\\LIVE - 2024.09.15 - 09-56-45 AM.mp4"),
-//                Paths.get("C:\\Users\\Arieh\\Desktop\\NewGD\\tmp\\thumb"),
-//                2);
-//        thumbnailService.detectFace(Paths.get("C:\\Users\\Arieh\\Desktop\\NewGD\\tmp\\thumb"), worshipMetaData)/**/;
-//        Files.walk(path).filter(Files::isRegularFile).forEach(s->thumbnailService.detectFace(s,worshipMetaData));
-//
-//
-//        if (Objects.nonNull(worshipMetaData)) {
-//            Path outputPath = gdVidGenService.gemerateGDVideo(worshipMetaData);
-//            youtubeUploader.uploadToYoutube(outputPath, worshipMetaData);
-//        } else {
-//            throw new Exception("Couldn't find any worship data. Try specify date and time of worship in the application.yml");
-//        }
+
+        if (Objects.nonNull(worshipMetaData)) {
+            Path outputPath = gdVidGenService.gemerateGDVideo(worshipMetaData);
+            youtubeUploader.uploadToYoutube(outputPath, worshipMetaData);
+        } else {
+            throw new Exception("Couldn't find any worship data. Try specify date and time of worship in the application.yml");
+        }
 
     }
 }
