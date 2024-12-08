@@ -56,11 +56,11 @@ public class Main implements CommandLineRunner {
     public void run(String... args) throws Exception {
         WorshipMetaData worshipMetaData = worshipServiceApi.getMostRecentWorship();
 
-        thumbnailService.generateThumbnails(worshipMetaData);
 
 
         if (Objects.nonNull(worshipMetaData)) {
             Path outputPath = gdVidGenService.gemerateGDVideo(worshipMetaData);
+            thumbnailService.generateThumbnails(worshipMetaData);
             youtubeUploader.uploadToYoutube(outputPath, worshipMetaData);
         } else {
             throw new Exception("Couldn't find any worship data. Try specify date and time of worship in the application.yml");

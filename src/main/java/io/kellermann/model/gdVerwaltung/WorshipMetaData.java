@@ -26,6 +26,12 @@ public class WorshipMetaData implements Comparable<WorshipMetaData> {
 	@JsonProperty("campus_shortname")
 	private String campusShortname;
 
+	@JsonProperty("service_image")
+	private String serviceImage;
+
+	@JsonProperty("service_albumart")
+	private String service_albumart;
+
 	private SeriesMetaData series;
 
 	private PersonMetaData person;
@@ -104,17 +110,36 @@ public class WorshipMetaData implements Comparable<WorshipMetaData> {
 		this.serviceTitleByLanguage = serviceTitleByLanguage;
 	}
 
-	@Override public String toString() {
-		final StringBuilder sb = new StringBuilder("WorshipMetaData{");
-		sb.append("serviceID=").append(serviceID);
-		sb.append(", startDate=").append(startDate);
-		sb.append(", startTime=").append(startTime);
-		sb.append(", serviceLanguage='").append(serviceLanguage).append('\'');
-		sb.append(", campusShortname='").append(campusShortname).append('\'');
-		sb.append(", series=").append(series);
-		sb.append(", serviceTitleByLanguage=").append(serviceTitleByLanguage);
-		sb.append('}');
-		return sb.toString();
+	public String getServiceImage() {
+		return serviceImage;
+	}
+
+	public void setServiceImage(String serviceImage) {
+		this.serviceImage = serviceImage;
+	}
+
+	public String getService_albumart() {
+		return service_albumart;
+	}
+
+	public void setService_albumart(String service_albumart) {
+		this.service_albumart = service_albumart;
+	}
+
+	@Override
+	public String toString() {
+		return "WorshipMetaData{" +
+				"serviceID=" + serviceID +
+				", startDate=" + startDate +
+				", startTime=" + startTime +
+				", serviceLanguage=" + serviceLanguage +
+				", campusShortname='" + campusShortname + '\'' +
+				", serviceImage='" + serviceImage + '\'' +
+				", service_albumart='" + service_albumart + '\'' +
+				", series=" + series +
+				", person=" + person +
+				", serviceTitleByLanguage=" + serviceTitleByLanguage +
+				'}';
 	}
 
 	@Override

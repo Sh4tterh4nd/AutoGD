@@ -2,9 +2,7 @@ package io.kellermann.services.gdManagement;
 
 import io.kellermann.config.GDManagementConfig;
 import io.kellermann.model.gdVerwaltung.ImageType;
-import io.kellermann.model.gdVerwaltung.Language;
 import io.kellermann.model.gdVerwaltung.WorshipMetaData;
-
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -49,6 +47,7 @@ public class WorshipServiceApi {
      * @return
      */
     public byte[] getSeriesImage(ImageType imageType, WorshipMetaData worshipMetaData) {
+//        System.out.println("media" + "/series" + "/" + imageType.getPath() + "/" + worshipMetaData.getServiceLanguage().getLanguageString() + "/" + worshipMetaData.getSeries().getImageByType(worshipMetaData.getServiceLanguage(), imageType));
         Mono<byte[]> mono = webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .pathSegment("media", "series",imageType.getPath(),worshipMetaData.getServiceLanguage().getLanguageString() ,worshipMetaData.getSeries().getImageByType(worshipMetaData.getServiceLanguage(), imageType))

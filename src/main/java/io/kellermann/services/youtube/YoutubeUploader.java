@@ -54,7 +54,7 @@ public class YoutubeUploader {
     }
 
 
-    public void insertVideoToPlaylist(Video video ,WorshipMetaData worshipMetaData) throws IOException {
+    public void insertVideoToPlaylist(Video video, WorshipMetaData worshipMetaData) throws IOException {
         ResourceId resourceId = new ResourceId();
         resourceId.setKind("youtube#video");
         resourceId.setVideoId(video.getId());
@@ -78,26 +78,25 @@ public class YoutubeUploader {
 
     public Playlist findOrCreatePlaylist(String title) throws IOException {
         List<Playlist> items = youTube.playlists().list("id,contentDetails,snippet").setMine(true).execute().getItems();
-
-        return items.stream().filter(s -> s.getSnippet().getTitle().equals(title)).findFirst().orElse(createPlaylist(title));
+        return items.stream().filter(s -> s.getSnippet().getTitle().equals(title)).findFirst().orElseGet(() -> createPlaylist(title));
 
     }
 
-    public Playlist createPlaylist(String title) throws IOException {
-        PlaylistSnippet playlistSnippet = new PlaylistSnippet();
-        playlistSnippet.setTitle(title);
-        PlaylistStatus playlistStatus = new PlaylistStatus();
-        playlistStatus.setPrivacyStatus("public");
+    public Playlist createPlaylist(String title) {
+        try {
+            PlaylistSnippet playlistSnippet = new PlaylistSnippet();
+            playlistSnippet.setTitle(title);
+            PlaylistStatus playlistStatus = new PlaylistStatus();
+            playlistStatus.setPrivacyStatus("public");
 
-        Playlist youTubePlaylist = new Playlist();
-        youTubePlaylist.setSnippet(playlistSnippet);
-        youTubePlaylist.setStatus(playlistStatus);
-
-
-        YouTube.Playlists.Insert playlistInsertCommand =
-                youTube.playlists().insert("snippet,status", youTubePlaylist);
-
-        return playlistInsertCommand.execute();
+            Playlist youTubePlaylist = new Playlist();
+            youTubePlaylist.setSnippet(playlistSnippet);
+            youTubePlaylist.setStatus(playlistStatus);
+            YouTube.Playlists.Insert playlistInsertCommand = youTube.playlists().insert("snippet,status", youTubePlaylist);
+            return playlistInsertCommand.execute();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
@@ -175,7 +174,6 @@ public class YoutubeUploader {
             System.out.println("  - Tags: " + returnedVideo.getSnippet().getTags());
             System.out.println("  - Privacy Status: " + returnedVideo.getStatus().getPrivacyStatus());
             System.out.println("  - Video Count: " + returnedVideo.getStatistics().getViewCount());
-
 
 
         } catch (GoogleJsonResponseException e) {
