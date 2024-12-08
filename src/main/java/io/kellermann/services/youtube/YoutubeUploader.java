@@ -100,7 +100,7 @@ public class YoutubeUploader {
     }
 
 
-    public void uploadToYoutube(Path videoPath, WorshipMetaData worshipMetaData) {
+    public String uploadToYoutube(Path videoPath, WorshipMetaData worshipMetaData) {
 
         try {
 
@@ -175,7 +175,7 @@ public class YoutubeUploader {
             System.out.println("  - Privacy Status: " + returnedVideo.getStatus().getPrivacyStatus());
             System.out.println("  - Video Count: " + returnedVideo.getStatistics().getViewCount());
 
-
+            return "https://youtu.be/" + returnedVideo.getId();
         } catch (GoogleJsonResponseException e) {
             System.err.println("GoogleJsonResponseException code: " + e.getDetails().getCode() + " : "
                     + e.getDetails().getMessage());
@@ -187,6 +187,7 @@ public class YoutubeUploader {
             System.err.println("Throwable: " + t.getMessage());
             t.printStackTrace();
         }
+        return "";
     }
 
 }

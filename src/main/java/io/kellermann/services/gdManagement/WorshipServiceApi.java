@@ -3,7 +3,11 @@ package io.kellermann.services.gdManagement;
 import io.kellermann.config.GDManagementConfig;
 import io.kellermann.model.gdVerwaltung.ImageType;
 import io.kellermann.model.gdVerwaltung.WorshipMetaData;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -42,6 +46,7 @@ public class WorshipServiceApi {
 
     /**
      * Get image by imageType
+     *
      * @param imageType
      * @param worshipMetaData
      * @return
@@ -50,7 +55,7 @@ public class WorshipServiceApi {
 //        System.out.println("media" + "/series" + "/" + imageType.getPath() + "/" + worshipMetaData.getServiceLanguage().getLanguageString() + "/" + worshipMetaData.getSeries().getImageByType(worshipMetaData.getServiceLanguage(), imageType));
         Mono<byte[]> mono = webClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .pathSegment("media", "series",imageType.getPath(),worshipMetaData.getServiceLanguage().getLanguageString() ,worshipMetaData.getSeries().getImageByType(worshipMetaData.getServiceLanguage(), imageType))
+                        .pathSegment("media", "series", imageType.getPath(), worshipMetaData.getServiceLanguage().getLanguageString(), worshipMetaData.getSeries().getImageByType(worshipMetaData.getServiceLanguage(), imageType))
                         .build())
                 .retrieve()
                 .bodyToMono(byte[].class);
@@ -60,7 +65,7 @@ public class WorshipServiceApi {
 
     public void saveSeriesImageTo(ImageType imageType, WorshipMetaData worshipMetaData, Path seriesImagePath) {
         try {
-            Files.write(seriesImagePath,getSeriesImage(imageType,worshipMetaData));
+            Files.write(seriesImagePath, getSeriesImage(imageType, worshipMetaData));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -111,5 +116,22 @@ public class WorshipServiceApi {
 
     private boolean isPassed(WorshipMetaData theWorship) {
         return config.getTime().isAfter(theWorship.getStartTime());
+    }
+
+
+    public void submitURLToGDTool(String url, WorshipMetaData worshipMetaData) {
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+        formData.add("token", "6yZcTOhgWPKDmAc1t5PbtubV59Vkz8LSgI3r09zk");
+        formData.add("link", url);
+        formData.add("id", String.valueOf(worshipMetaData.getServiceID()));
+        webClient.post()
+                .uri("/interfaces/services/set-youtube-link")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .body(BodyInserters.fromFormData(formData))
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+
+
     }
 }

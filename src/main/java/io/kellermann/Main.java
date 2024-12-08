@@ -15,6 +15,8 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Objects;
 
 @SpringBootApplication
@@ -55,13 +57,16 @@ public class Main implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         WorshipMetaData worshipMetaData = worshipServiceApi.getMostRecentWorship();
-
+        List<WorshipMetaData> worshipsByDate = worshipServiceApi.getWorshipsByDate(LocalDate.of(2024, 12, 01));
+        WorshipMetaData worshipMetaData1 = worshipsByDate.stream().filter(s -> s.getServiceID() == 10862).findFirst().get();
 
 
         if (Objects.nonNull(worshipMetaData)) {
             Path outputPath = gdVidGenService.gemerateGDVideo(worshipMetaData);
             thumbnailService.generateThumbnails(worshipMetaData);
-            youtubeUploader.uploadToYoutube(outputPath, worshipMetaData);
+            String url = youtubeUploader.uploadToYoutube(outputPath, worshipMetaData);
+
+            worshipServiceApi.submitURLToGDTool(url, worshipMetaData1);
         } else {
             throw new Exception("Couldn't find any worship data. Try specify date and time of worship in the application.yml");
         }
