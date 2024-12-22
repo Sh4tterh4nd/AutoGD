@@ -34,6 +34,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -200,8 +201,13 @@ public class ThumbnailService {
 
 
         try {
-            drawSeriesTitle(bufferedImage, worshipMetaData.getSeries().getTitleLanguage(worshipMetaData.getServiceLanguage()));
-            drawTitle(bufferedImage, worshipMetaData.getServiceTitle(worshipMetaData.getServiceLanguage()));
+            if (Objects.nonNull(worshipMetaData.getSeries().getTitleLanguage(worshipMetaData.getServiceLanguage()))) {
+                drawSeriesTitle(bufferedImage, worshipMetaData.getSeries().getTitleLanguage(worshipMetaData.getServiceLanguage()));
+                drawTitle(bufferedImage, worshipMetaData.getServiceTitle(worshipMetaData.getServiceLanguage()));
+            } else {
+                drawTitleOpenTopic(bufferedImage, worshipMetaData.getServiceTitle(worshipMetaData.getServiceLanguage()));
+            }
+
             drawPastor(bufferedImage, worshipMetaData.getPerson().getFirstName() + " " + worshipMetaData.getPerson().getLastName());
 
             insertImage(bufferedImage, ImageIO.read(videoConfiguration.getResources().resolve("silbern_small.png").toFile()), 0.86);
@@ -241,6 +247,11 @@ public class ThumbnailService {
     public void drawTitle(BufferedImage bf, String title) {
         var font = new Font("Source Sans 3 ExtraLight", Font.PLAIN, 68);
         drawText(bf, title, font, .215, .775);
+    }
+
+    public void drawTitleOpenTopic(BufferedImage bf, String title) {
+        var font = new Font("Source Sans 3 ExtraLight", Font.PLAIN, 68);
+        drawText(bf, title, font, .205, .775);
     }
 
 
