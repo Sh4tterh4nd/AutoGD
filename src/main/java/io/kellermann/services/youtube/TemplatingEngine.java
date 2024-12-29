@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 
@@ -50,7 +51,7 @@ public class TemplatingEngine {
 
             Map<Pattern, String> patternMap = new HashMap<>();
 
-            stringMap.forEach((key, value) -> patternMap.put(Pattern.compile("\\[%" + key + "%\\]"), value));
+            stringMap.forEach((key, value) -> patternMap.put(Pattern.compile("\\[%" + key + "%\\]"), Objects.isNull(value) ? "" : value));
             return patternMap;
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);

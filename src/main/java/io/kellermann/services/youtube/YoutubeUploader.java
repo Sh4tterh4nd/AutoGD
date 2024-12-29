@@ -36,6 +36,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class YoutubeUploader {
@@ -165,7 +166,10 @@ public class YoutubeUploader {
             // Call the API and upload the video.
             Video returnedVideo = videoInsert.execute();
 
-            insertVideoToPlaylist(returnedVideo, worshipMetaData);
+            if (Objects.nonNull(worshipMetaData.getSeries().getId())) {
+                insertVideoToPlaylist(returnedVideo, worshipMetaData);
+            }
+
 
             // Print data about the newly inserted video from the API response.
             System.out.println("\n================== Returned Video ==================\n");

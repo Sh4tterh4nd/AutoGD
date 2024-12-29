@@ -13,12 +13,10 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.time.temporal.TemporalAccessor;
-import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 
 @Service
@@ -41,14 +39,27 @@ public class GdGenerationService {
         setupWorkspace();
 
         Path tempWorkspace = videoConfiguration.getTempWorkspace();
-        Path albumartImage = tempWorkspace.resolve("albumart_" + worshipMetaData.getSeries().getAlbumartLanguage(worshipMetaData.getServiceLanguage()));
-        Path widescreenImage = tempWorkspace.resolve("widescreen_" + worshipMetaData.getSeries().getAlbumartLanguage(worshipMetaData.getServiceLanguage()));
+        Path albumartImage;
+        Path widescreenImage;
+        if (Objects.isNull(worshipMetaData.getService_albumart()) || worshipMetaData.getService_albumart().isBlank()) {
+            albumartImage = tempWorkspace.resolve("albumart_" + worshipMetaData.getSeries().getAlbumartLanguage(worshipMetaData.getServiceLanguage()));
+        } else {
+            albumartImage = tempWorkspace.resolve("albumart_" + worshipMetaData.getService_albumart());
+        }
+
+        if (Objects.isNull(worshipMetaData.getServiceImage()) || worshipMetaData.getServiceImage().isBlank()) {
+            widescreenImage = tempWorkspace.resolve("widescreen_" + worshipMetaData.getSeries().getAlbumartLanguage(worshipMetaData.getServiceLanguage()));
+        } else {
+            widescreenImage = tempWorkspace.resolve("albumart_" + worshipMetaData.getServiceImage());
+        }
+
+
         Path imageIntro = tempWorkspace.resolve("image_intro.mp4");
         Path renderedIntro = tempWorkspace.resolve("rendered_intro.mp4");
 
 
-        worshipServiceApi.saveSeriesImageTo(ImageType.ALBUMART, worshipMetaData, albumartImage);
-        worshipServiceApi.saveSeriesImageTo(ImageType.WIDESCREEN, worshipMetaData, widescreenImage);
+        worshipServiceApi.saveGDImageTo(ImageType.ALBUMART, worshipMetaData, albumartImage);
+        worshipServiceApi.saveGDImageTo(ImageType.WIDESCREEN, worshipMetaData, widescreenImage);
 
 
         //Convert title image to video

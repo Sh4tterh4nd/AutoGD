@@ -18,6 +18,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class WorshipServiceApi {
@@ -44,28 +45,61 @@ public class WorshipServiceApi {
         return Arrays.asList(response);
     }
 
+//    /**
+//     * Get series by imageType
+//     *
+//     * @param imageType
+//     * @param worshipMetaData
+//     * @return
+//     */
+//    public byte[] getSeriesImage(ImageType imageType, WorshipMetaData worshipMetaData) {
+//        Mono<byte[]> mono = webClient.get()
+//                .uri(uriBuilder -> uriBuilder
+//                        .pathSegment("media", "series", imageType.getPath(), worshipMetaData.getServiceLanguage().getLanguageString(), worshipMetaData.getSeries().getImageByType(worshipMetaData.getServiceLanguage(), imageType))
+//                        .build())
+//                .retrieve()
+//                .bodyToMono(byte[].class);
+//
+//        return mono.block();
+//    }
+
     /**
-     * Get image by imageType
+     * Get GDimage by imageType
      *
      * @param imageType
      * @param worshipMetaData
      * @return
      */
-    public byte[] getSeriesImage(ImageType imageType, WorshipMetaData worshipMetaData) {
-//        System.out.println("media" + "/series" + "/" + imageType.getPath() + "/" + worshipMetaData.getServiceLanguage().getLanguageString() + "/" + worshipMetaData.getSeries().getImageByType(worshipMetaData.getServiceLanguage(), imageType));
-        Mono<byte[]> mono = webClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .pathSegment("media", "series", imageType.getPath(), worshipMetaData.getServiceLanguage().getLanguageString(), worshipMetaData.getSeries().getImageByType(worshipMetaData.getServiceLanguage(), imageType))
-                        .build())
-                .retrieve()
-                .bodyToMono(byte[].class);
-
+    public byte[] getGDImage(ImageType imageType, WorshipMetaData worshipMetaData) {
+        Mono<byte[]> mono;
+        if (Objects.isNull(worshipMetaData.getServiceImage()) || worshipMetaData.getServiceImage().isBlank()) {
+            mono = webClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .pathSegment("media", "series", imageType.getPath(), worshipMetaData.getServiceLanguage().getLanguageString(), worshipMetaData.getSeries().getImageByType(worshipMetaData.getServiceLanguage(), imageType))
+                            .build())
+                    .retrieve()
+                    .bodyToMono(byte[].class);
+        } else {
+            mono = webClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .pathSegment("media", "services", "images", worshipMetaData.getServiceImage())
+                            .build())
+                    .retrieve()
+                    .bodyToMono(byte[].class);
+        }
         return mono.block();
     }
 
-    public void saveSeriesImageTo(ImageType imageType, WorshipMetaData worshipMetaData, Path seriesImagePath) {
+    /**
+     * This will download and save the image for the GD to a file specified. In most cases this will be the series image except a dedicated GD image is defined.
+     *
+     * @param imageType
+     * @param worshipMetaData
+     * @param seriesImagePath
+     */
+    public void saveGDImageTo(ImageType imageType, WorshipMetaData worshipMetaData, Path seriesImagePath) {
         try {
-            Files.write(seriesImagePath, getSeriesImage(imageType, worshipMetaData));
+            Files.write(seriesImagePath, getGDImage(imageType, worshipMetaData));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
