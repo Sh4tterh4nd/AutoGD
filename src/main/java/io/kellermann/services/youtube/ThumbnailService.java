@@ -159,11 +159,11 @@ public class ThumbnailService {
                 }
                 Imgcodecs.imwrite(source.getParent().getParent().resolve("head").resolve(source.getFileName()).toAbsolutePath().toString(), submat);
 
-                if (eyeDetections.toArray().length > 0) {
+//                if (eyeDetections.toArray().length > 0) {
                     candidate.setCenterPoint(centerOfRect);
                     Imgcodecs.imwrite(source.getParent().getParent().resolve("eye").resolve(source.getFileName()).toAbsolutePath().toString(), imageMat);
                     return candidate;
-                }
+//                }
             }
         }
         return candidate;
@@ -251,7 +251,7 @@ public class ThumbnailService {
 
     public void drawTitleOpenTopic(BufferedImage bf, String title) {
         var font = new Font("Source Sans 3 ExtraLight", Font.PLAIN, 68);
-        drawText(bf, title, font, .205, .775);
+        drawText(bf, title, font, .205, .5);
     }
 
 
