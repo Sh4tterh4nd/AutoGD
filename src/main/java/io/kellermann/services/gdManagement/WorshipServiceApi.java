@@ -155,7 +155,7 @@ public class WorshipServiceApi {
 
     public void submitURLToGDTool(String url, WorshipMetaData worshipMetaData) {
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-        formData.add("token", "6yZcTOhgWPKDmAc1t5PbtubV59Vkz8LSgI3r09zk");
+        formData.add("token", config.getToken());
         formData.add("link", url);
         formData.add("id", String.valueOf(worshipMetaData.getServiceID()));
         webClient.post()

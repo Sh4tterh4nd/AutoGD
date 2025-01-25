@@ -13,6 +13,8 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -50,7 +52,7 @@ public class GdGenerationService {
         if (Objects.isNull(worshipMetaData.getServiceImage()) || worshipMetaData.getServiceImage().isBlank()) {
             widescreenImage = tempWorkspace.resolve("widescreen_" + worshipMetaData.getSeries().getAlbumartLanguage(worshipMetaData.getServiceLanguage()));
         } else {
-            widescreenImage = tempWorkspace.resolve("albumart_" + worshipMetaData.getServiceImage());
+            widescreenImage = tempWorkspace.resolve("widescreen_" + worshipMetaData.getServiceImage());
         }
 
 
@@ -71,7 +73,7 @@ public class GdGenerationService {
 
         //Cut original main video
         Path originalCut = tempWorkspace.resolve("original_cut.mp4");
-        jaffreeFFmpegService.cutVideo(videoConfiguration.getGdVideoStartTime(), videoConfiguration.getGdVideoEndTime(), getMainRecording(worshipMetaData), originalCut);
+        jaffreeFFmpegService.cutAudioVideo(videoConfiguration.getGdVideoStartTime(), videoConfiguration.getGdVideoEndTime(), getMainRecording(worshipMetaData), originalCut, false);
 
         //Render finished GD
         jaffreeFFmpegService.concatVideo(videoConfiguration.getOutput().resolve("finalGD.mp4"), 1.5, renderedIntro, originalCut, videoConfiguration.getOutroVideoName());
@@ -84,6 +86,20 @@ public class GdGenerationService {
 
         return videoConfiguration.getOutput().resolve("finalGD.mp4");
     }
+
+    public Path generateGDPodcast(WorshipMetaData worshipMetaData) throws IOException {
+        Path tempWorkspace = videoConfiguration.getTempWorkspace();
+        Path originalCut = tempWorkspace.resolve("original_cut.mp3");
+        jaffreeFFmpegService.cutAudioVideo(videoConfiguration.getGdVideoStartTime(), videoConfiguration.getGdVideoEndTime(), getMainRecording(worshipMetaData), originalCut, true);
+        List<Path> audioSegmentsList = new ArrayList<>();
+        audioSegmentsList.add(videoConfiguration.getIntroPodcastName());
+        audioSegmentsList.add(originalCut);
+        audioSegmentsList.add(videoConfiguration.getOutroPodcastName());
+
+
+        return null;
+    }
+
 
     public void setupWorkspace() {
         if (Files.exists(videoConfiguration.getTempWorkspace())) {

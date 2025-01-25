@@ -1,11 +1,12 @@
 package io.kellermann.config;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Component
 @ConfigurationProperties(prefix = "autogd.gdverwaltung.select")
@@ -16,6 +17,9 @@ public class GDManagementConfig {
     private LocalDate date = LocalDate.now();
 
     private LocalTime time = LocalTime.now();
+
+    @Value("${autogd.gdverwaltung.token}")
+    private String token;
 
 
     public GDManagementConfig() {
@@ -43,5 +47,13 @@ public class GDManagementConfig {
 
     public void setTime(LocalTime time) {
         this.time = time;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }
