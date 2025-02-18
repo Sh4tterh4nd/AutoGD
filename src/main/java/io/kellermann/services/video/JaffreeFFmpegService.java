@@ -77,18 +77,36 @@ public class JaffreeFFmpegService {
         concatVideoAndMergeAudio(output, audio, Arrays.asList(videos));
     }
 
-
-    public void cutVideo(LocalTime start, LocalTime end, Path input, Path output) {
+    /**
+     * Cut video and extract video and audio from a file (or exclusively audio)
+     *
+     * @param start     the start time of the desired part within the original file
+     * @param end       the endpoint of the desired part within the original file
+     * @param input     the input file path Video
+     * @param output    the output file path for the new Video or Audio
+     * @param onlyAudio define if only the Audio should be extracted
+     */
+    public void cutAudioVideo(LocalTime start, LocalTime end, Path input, Path output, boolean onlyAudio) {
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss.SS");
-        FFmpeg
+        FFmpeg ffmpegPack = FFmpeg
                 .atPath()
                 .addInput(UrlInput.fromPath(input)
                         .addArguments("-ss", start.format(dateTimeFormatter))
-                        .addArguments("-to", end.format(dateTimeFormatter)))
-                .addOutput(UrlOutput.toPath(output)
-                        .setCodec(StreamType.VIDEO, "copy")
-                        .setCodec(StreamType.AUDIO, "copy")
-                        .addArguments("-b:a", "192k"))
+                        .addArguments("-to", end.format(dateTimeFormatter)));
+        if (onlyAudio) {
+            ffmpegPack
+                    .addOutput(UrlOutput.toPath(output)
+                            .setCodec(StreamType.AUDIO, "copy")
+                            .addArguments("-b:a", "192k"));
+        } else {
+            ffmpegPack
+                    .addOutput(UrlOutput.toPath(output)
+                            .setCodec(StreamType.VIDEO, "copy")
+                            .setCodec(StreamType.AUDIO, "copy")
+                            .addArguments("-b:a", "192k"));
+        }
+
+        ffmpegPack
                 .setOutputListener(new OutputListener() {
                     @Override
                     public void onOutput(String s) {
@@ -96,26 +114,37 @@ public class JaffreeFFmpegService {
                     }
                 })
                 .execute();
-
     }
 
+    /**
+     * Concat List of videos and fade the individual sections out and in
+     *
+     * @param output       target output file
+     * @param videos       number of Paths to videos, each video requires one audio and one video track
+     * @param fadeDuration the fade duration in seconds
+     */
     public void concatVideo(Path output, double fadeDuration, Path... videos) {
         concatVideo(output, Arrays.asList(videos), fadeDuration);
     }
 
+    /**
+     * Concat List of videos and fade the individual sections out and in
+     *
+     * @param output       target output file
+     * @param videos       the List of paths to the videos, each video requires one audio and one video track
+     * @param fadeDuration the fade duration in seconds
+     */
     public void concatVideo(Path output, List<Path> videos, double fadeDuration) {
         FFmpeg fFmpeg = FFmpeg
                 .atPath()
                 .setOverwriteOutput(true);
-        fFmpeg.addInput(UrlInput.fromPath(videos.get(0))
-//                .addArguments("-hwaccel", "cuda")
-//                .addArguments("-hwaccel_output_format", "cuda")
-        );
-        for (int i = 1; i < videos.size(); i++) {
-            fFmpeg.addInput(UrlInput.fromPath(videos.get(i)));
+
+        for (Path video : videos) {
+            fFmpeg.addInput(UrlInput.fromPath(video));
+
         }
         fFmpeg
-                .addArguments("-filter_complex", concatFadeFilter(videos, fadeDuration) + ";[a]loudnorm=" + videoConfiguration.getLoudnormParameter() + " [aud]");
+                .addArguments("-filter_complex", concatFadeVideoFilterBuilder(videos, fadeDuration) + ";[a]loudnorm=" + videoConfiguration.getLoudnormParameter() + " [aud]");
 
         fFmpeg.addOutput(UrlOutput.toPath(output)
                 .addArguments("-vcodec", videoConfiguration.getCodec())
@@ -125,6 +154,40 @@ public class JaffreeFFmpegService {
                 .addArguments("-b:a", "192000")
                 .addArguments("-map", "[aud]")
                 .addArguments("-map", "[v]")
+                .addArguments("-preset", "fast")
+        );
+
+        fFmpeg.setOutputListener(new OutputListener() {
+            @Override
+            public void onOutput(String s) {
+                System.out.println(s);
+            }
+        });
+        fFmpeg.execute();
+    }
+
+
+    /**
+     * Concat List of audioSegments and fade the individual sections out and in
+     *
+     * @param output            target output file
+     * @param audioSegments     the List of paths to the audioSegments, each video requires one audio and one video track
+     * @param crossFadeDuration the fade duration in seconds
+     */
+    public void concatAudio(Path output, List<Path> audioSegments, double crossFadeDuration) {
+        FFmpeg fFmpeg = FFmpeg
+                .atPath()
+                .setOverwriteOutput(true);
+        for (Path video : audioSegments) {
+            fFmpeg.addInput(UrlInput.fromPath(video));
+        }
+        fFmpeg
+                .addArguments("-filter_complex", concatAudioCrossFadeFilterBuilder(audioSegments.size(), crossFadeDuration) + ";[a]loudnorm=" + videoConfiguration.getLoudnormParameter() + " [aud]");
+
+        fFmpeg.addOutput(UrlOutput.toPath(output)
+                .addArguments("-acodec", "libmp3lame")
+                .addArguments("-b:a", "192000")
+                .addArguments("-map", "[aud]")
                 .addArguments("-preset", "fast")
         );
 
@@ -176,7 +239,12 @@ public class JaffreeFFmpegService {
         return null;
     }
 
-
+    /**
+     * Command builder for complex filter to concat video and audio
+     *
+     * @param number number of videos to concat
+     * @return returns the concat String
+     */
     private String concatVideoFilterBuilder(int number) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < number; i++) {
@@ -190,7 +258,14 @@ public class JaffreeFFmpegService {
         return sb.toString();
     }
 
-    public String concatFadeFilter(List<Path> paths, double duration) {
+    /**
+     * Command builder for concating video with fade in and out on the middle parts
+     *
+     * @param paths    list of paths for the videos
+     * @param duration the fade duration in seconds
+     * @return retunrns the complex filter concatfade String
+     */
+    public String concatFadeVideoFilterBuilder(List<Path> paths, double duration) {
         String sr = "";
         List<LocalTime> list = paths.stream().map(this::getDurationLocalTime).toList();
         for (int i = 0; i < list.size(); i++) {
@@ -220,7 +295,56 @@ public class JaffreeFFmpegService {
         return sr + sb.toString();
     }
 
+    /**
+     * Command builder for complex filter for concating audio with crossfade
+     *
+     * @param numberOfFiles the number of audio segments
+     * @param duration      the corssfade duration
+     * @return the complex filter input
+     */
+    public String concatAudioCrossFadeFilterBuilder(int numberOfFiles, double duration) {
+        StringBuilder command = new StringBuilder();
+        if (numberOfFiles > 1) {
+            command = new StringBuilder("[0][1]acrossfade=d=" + duration + ":c1=tri:c2=tri");
+            for (int i = 2; i < numberOfFiles; i++) {
+                command.append("[a").append(i - 1).append("];").append("[a").append(i - 1).append("][1]acrossfade=d=").append(duration).append(":c1=tri:c2=tri");
+            }
+            command.append("[a]");
+        }
+        return command.toString();
+    }
+
+
+    /**
+     * Turns LocalTime to Seconds
+     *
+     * @param localTime the to convert LocalTime
+     * @return seconds
+     */
     private double getSecondsWithPeriod(LocalTime localTime) {
         return (localTime.toNanoOfDay() / 1000000000.0);
     }
+
+
+    public void generateImageFromVideo(LocalTime start, LocalTime end, Path video, Path outDir, double frameRate) {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss.SS");
+        FFmpeg
+                .atPath()
+                .addInput(UrlInput.fromPath(video)
+                        .addArguments("-ss", start.format(dateTimeFormatter))
+                        .addArguments("-to", end.format(dateTimeFormatter)))
+                .addOutput(UrlOutput.toPath(outDir.resolve("out000%d.bmp"))
+//                        .addArguments("-vsync", "0")
+                        .addArguments("-qscale:v", "4")
+//                        .addArgument("-copyts")
+                        .addArguments("-vf", "fps=" + frameRate))
+                .setOutputListener(new OutputListener() {
+                    @Override
+                    public void onOutput(String s) {
+                        System.out.println(s);
+                    }
+                })
+                .execute();
+    }
+
 }

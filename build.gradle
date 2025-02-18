@@ -28,10 +28,9 @@ dependencies {
     // https://mvnrepository.com/artifact/com.github.kokorin.jaffree/jaffree
     implementation 'com.github.kokorin.jaffree:jaffree:2023.09.10'
 
-//    implementation 'net.bramp.ffmpeg:ffmpeg:0.8.0'
 
-
-
+// https://mvnrepository.com/artifact/io.grpc/grpc-context
+    implementation 'io.grpc:grpc-context:1.69.0'
 
 
     implementation 'com.google.apis:google-api-services-youtube:v3-rev222-1.25.0'
@@ -43,7 +42,7 @@ dependencies {
 //    implementation 'com.google.collections:google-collections:1.0'
 
 
-
+    implementation 'org.openpnp:opencv:4.9.0-0'
 
 
     testImplementation platform('org.junit:junit-bom:5.10.0')
@@ -53,8 +52,6 @@ dependencies {
 test {
     useJUnitPlatform()
 }
-
-
 
 
 bootJar {

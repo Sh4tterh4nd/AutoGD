@@ -35,8 +35,8 @@ public class YoutubeContext {
     @Bean
     public Credential authorizationCredentials() throws IOException {
         List<String> scopes = new ArrayList<>();
-        scopes.add("https://www.googleapis.com/auth/youtube.upload");
         scopes.add("https://www.googleapis.com/auth/youtube");
+        scopes.add("https://www.googleapis.com/auth/youtube.upload");
 
         String credentialDatastore = "uploadvideo";
         // Load client secrets.
@@ -48,14 +48,19 @@ public class YoutubeContext {
         DataStore<StoredCredential> datastore = fileDataStoreFactory.getDataStore(credentialDatastore);
 
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
-                HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, scopes).setCredentialDataStore(datastore)
+                HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, scopes)
+                .setAccessType("offline")
+                .setCredentialDataStore(datastore)
                 .build();
 
         // Build the local server and bind it to port 8080
         LocalServerReceiver localReceiver = new LocalServerReceiver.Builder().setPort(8080).build();
 
+
         // Authorize.
-        return new AuthorizationCodeInstalledApp(flow, localReceiver).authorize("user");
+        Credential user = new AuthorizationCodeInstalledApp(flow, localReceiver).authorize("user");
+
+        return user;
     }
 
     @Bean

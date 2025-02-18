@@ -13,12 +13,12 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.time.temporal.TemporalAccessor;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 
 @Service
@@ -35,20 +35,27 @@ public class GdGenerationService {
         this.utilityC = utilityComponent;
     }
 
-
+    /**
+     * @param worshipMetaData
+     * @return
+     * @throws IOException
+     */
     public Path gemerateGDVideo(WorshipMetaData worshipMetaData) throws IOException {
-
         setupWorkspace();
-
         Path tempWorkspace = videoConfiguration.getTempWorkspace();
-        Path albumartImage = tempWorkspace.resolve("albumart_" + worshipMetaData.getSeries().getAlbumartLanguage(worshipMetaData.getServiceLanguage()));
-        Path widescreenImage = tempWorkspace.resolve("widescreen_" + worshipMetaData.getSeries().getAlbumartLanguage(worshipMetaData.getServiceLanguage()));
+        Path widescreenImage;
+        if (Objects.isNull(worshipMetaData.getServiceImage()) || worshipMetaData.getServiceImage().isBlank()) {
+            widescreenImage = tempWorkspace.resolve("widescreen_" + worshipMetaData.getSeries().getAlbumartLanguage(worshipMetaData.getServiceLanguage()));
+        } else {
+            widescreenImage = tempWorkspace.resolve("widescreen_" + worshipMetaData.getServiceImage());
+        }
+
+
         Path imageIntro = tempWorkspace.resolve("image_intro.mp4");
         Path renderedIntro = tempWorkspace.resolve("rendered_intro.mp4");
 
 
-        worshipServiceApi.saveSeriesImageTo(ImageType.ALBUMART, worshipMetaData, albumartImage);
-        worshipServiceApi.saveSeriesImageTo(ImageType.WIDESCREEN, worshipMetaData, widescreenImage);
+        worshipServiceApi.saveGDImageTo(ImageType.WIDESCREEN, worshipMetaData, widescreenImage);
 
 
         //Convert title image to video
@@ -60,7 +67,7 @@ public class GdGenerationService {
 
         //Cut original main video
         Path originalCut = tempWorkspace.resolve("original_cut.mp4");
-        jaffreeFFmpegService.cutVideo(videoConfiguration.getGdVideoStartTime(), videoConfiguration.getGdVideoEndTime(), getMainRecording(worshipMetaData), originalCut);
+        jaffreeFFmpegService.cutAudioVideo(videoConfiguration.getGdVideoStartTime(), videoConfiguration.getGdVideoEndTime(), getMainRecording(worshipMetaData), originalCut, false);
 
         //Render finished GD
         jaffreeFFmpegService.concatVideo(videoConfiguration.getOutput().resolve("finalGD.mp4"), 1.5, renderedIntro, originalCut, videoConfiguration.getOutroVideoName());
@@ -73,6 +80,39 @@ public class GdGenerationService {
 
         return videoConfiguration.getOutput().resolve("finalGD.mp4");
     }
+
+    /**
+     * Generates the GD Podcast file
+     *
+     * @param worshipMetaData
+     * @return
+     * @throws IOException
+     */
+    public Path generateGDPodcast(WorshipMetaData worshipMetaData) throws IOException {
+        Path tempWorkspace = videoConfiguration.getTempWorkspace();
+        Path albumartImage;
+        if (Objects.isNull(worshipMetaData.getService_albumart()) || worshipMetaData.getService_albumart().isBlank()) {
+            albumartImage = tempWorkspace.resolve("albumart_" + worshipMetaData.getSeries().getAlbumartLanguage(worshipMetaData.getServiceLanguage()));
+        } else {
+            albumartImage = tempWorkspace.resolve("albumart_" + worshipMetaData.getService_albumart());
+        }
+
+        worshipServiceApi.saveGDImageTo(ImageType.ALBUMART, worshipMetaData, albumartImage);
+
+
+        Path originalCut = tempWorkspace.resolve("original_cut.mp3");
+        jaffreeFFmpegService.cutAudioVideo(videoConfiguration.getGdVideoStartTime(), videoConfiguration.getGdVideoEndTime(), getMainRecording(worshipMetaData), originalCut, true);
+        List<Path> audioSegmentsList = new ArrayList<>();
+
+        audioSegmentsList.add(videoConfiguration.getIntroPodcastName());
+        audioSegmentsList.add(originalCut);
+        audioSegmentsList.add(videoConfiguration.getOutroPodcastName());
+
+        jaffreeFFmpegService.concatAudio(videoConfiguration.getWavTarget().resolve("podcast.wav"), audioSegmentsList, 2.5);
+
+        return videoConfiguration.getWavTarget().resolve("podcast.wav");
+    }
+
 
     public void setupWorkspace() {
         if (Files.exists(videoConfiguration.getTempWorkspace())) {
@@ -114,10 +154,22 @@ public class GdGenerationService {
         return mp4Candidates.getMp4Path();
     }
 
+    /**
+     * Returns true a file has the .mp4 file ending
+     *
+     * @param thePath path to the file
+     * @return boolean value if file ending is mp4
+     */
     public boolean isMp4(Path thePath) {
         return thePath.getFileName().toString().endsWith(".mp4");
     }
 
+    /**
+     * Converts Paths matching the vMix recording pattern mp4Candidate objects with the filename parsed to a DateTime Object to easy filter / search for the needed recording.
+     *
+     * @param path path to potential mp4 recordings
+     * @return parsed mp4Candidate object for submitted path
+     */
     public mp4Candidates parsePathToCandidate(Path path) {
         String fileName = path.getFileName().toString();
         Pattern compile = Pattern.compile("(?<=LIVE - )(?<timestring>.+)(?=\\.mp4)");
