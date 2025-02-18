@@ -18,7 +18,7 @@ autogd:
 
 
     gdVideoStartTime: "00:22:53.5"
-    gdVideoEndTime:  "00:25:20.5"
+    gdVideoEndTime: "00:23:10.5"
 
 
     precodec-param: ""
@@ -46,10 +46,11 @@ autogd:
       - Service
       - Silbern Church
     for-kids: false
-    privacy-status: public
+    privacy-status: private
   gdverwaltung:
+    token: "...."
     select:
       location: "Silbern"
-#      date: "10.11.2024"
+#      date: "29.12.2024"
 #      time: "11:00"
 

@@ -59,10 +59,6 @@ public class YoutubeContext {
 
         // Authorize.
         Credential user = new AuthorizationCodeInstalledApp(flow, localReceiver).authorize("user");
-        System.out.println("user " + user);
-        System.out.println("acesstoken " + user.getAccessToken());
-        System.out.println("refresh " + user.getRefreshToken());
-
 
         return user;
     }
