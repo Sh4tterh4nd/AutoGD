@@ -138,8 +138,10 @@ public class JaffreeFFmpegService {
         FFmpeg fFmpeg = FFmpeg
                 .atPath()
                 .setOverwriteOutput(true);
+
         for (Path video : videos) {
             fFmpeg.addInput(UrlInput.fromPath(video));
+
         }
         fFmpeg
                 .addArguments("-filter_complex", concatFadeVideoFilterBuilder(videos, fadeDuration) + ";[a]loudnorm=" + videoConfiguration.getLoudnormParameter() + " [aud]");
