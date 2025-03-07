@@ -1,0 +1,55 @@
+<!--EXTERNAL most of the menu is just copied from bootswatch.com-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+</head>
+<body>
+<div class="navbar navbar-expand-lg fixed-top navbar-dark bg-primary" th:fragment="navigation">
+    <div class="container">
+        <a href="/" class="navbar-brand">LydBook</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive"
+                aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/current">Current</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/authors">Authors</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/books">Books</a>
+                </li>
+            </ul>
+            <div class="form-inline my-2 my-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" href="/books">Books</a>
+                </li>
+                <!--                <ul sec:authorize="isAuthenticated()" class="navbar-nav mr-auto">-->
+                <!--                    <li class="nav-item dropdown">-->
+                <!--                        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button"-->
+                <!--                           aria-haspopup="true" aria-expanded="false">Account</a>-->
+                <!--                        <div class="dropdown-menu">-->
+                <!--                            <a class="dropdown-item" href="/myaccount">MyAccount</a>-->
+                <!--                            <th:block sec:authorize="hasRole('ADMIN')">-->
+                <!--                                <a class="dropdown-item" rel="noopener"-->
+                <!--                                   href="/admin/upload">Upload Audiobook</a>-->
+                <!--                                <a class="dropdown-item" rel="noopener"-->
+                <!--                                   href="/admin/users">Users</a>-->
+                <!--                            </th:block>-->
+                <!--                            <form th:action="@{/logout}" method="post" id="logout"></form>-->
+                <!--                            <a class="dropdown-item" href="" onclick="$('#logout').submit(); return false;">Logout</a>-->
+                <!--                        </div>-->
+                <!--                    </li>-->
+                <!--                </ul>-->
+            </div>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
