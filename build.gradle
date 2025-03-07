@@ -29,6 +29,9 @@ dependencies {
     implementation 'com.github.kokorin.jaffree:jaffree:2023.09.10'
 
 
+    implementation 'commons-net:commons-net:3.6'
+
+
 // https://mvnrepository.com/artifact/io.grpc/grpc-context
     implementation 'io.grpc:grpc-context:1.69.0'
 

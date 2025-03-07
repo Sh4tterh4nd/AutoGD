@@ -46,11 +46,17 @@ autogd:
       - Service
       - Silbern Church
     for-kids: false
-    privacy-status: private
+    privacy-status: public
   gdverwaltung:
-    token: "...."
+    token:
     select:
       location: "Silbern"
-#      date: "29.12.2024"
-#      time: "11:00"
+      date:
+      time:
 
+  podcast:
+    domain:
+    port:
+    path:
+    username:
+    password:

@@ -40,8 +40,8 @@ public class SeriesDeserializer extends StdDeserializer<SeriesMetaData> implemen
             if (JsonToken.FIELD_NAME.equals(jsonToken)) {
                 String fieldName = secondary.getCurrentName();
                 secondary.nextToken();
-
-                if (fieldName.startsWith("series_id ")) {
+//Todo if null use actual null object
+                if (fieldName.startsWith("series_id")) {
                     seriesMetaData.setId(secondary.getValueAsInt(0));
                 } else if (fieldName.startsWith("series_title_")) {
                     seriesMetaData.addTitleLanguage(getLanguage(fieldName), secondary.getValueAsString());

@@ -45,23 +45,6 @@ public class WorshipServiceApi {
         return Arrays.asList(response);
     }
 
-//    /**
-//     * Get series by imageType
-//     *
-//     * @param imageType
-//     * @param worshipMetaData
-//     * @return
-//     */
-//    public byte[] getSeriesImage(ImageType imageType, WorshipMetaData worshipMetaData) {
-//        Mono<byte[]> mono = webClient.get()
-//                .uri(uriBuilder -> uriBuilder
-//                        .pathSegment("media", "series", imageType.getPath(), worshipMetaData.getServiceLanguage().getLanguageString(), worshipMetaData.getSeries().getImageByType(worshipMetaData.getServiceLanguage(), imageType))
-//                        .build())
-//                .retrieve()
-//                .bodyToMono(byte[].class);
-//
-//        return mono.block();
-//    }
 
     /**
      * Get GDimage by imageType
@@ -153,7 +136,7 @@ public class WorshipServiceApi {
     }
 
 
-    public void submitURLToGDTool(String url, WorshipMetaData worshipMetaData) {
+    public void submitYoutubeUrlToGDManagement(String url, WorshipMetaData worshipMetaData) {
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("token", config.getToken());
         formData.add("link", url);
@@ -165,7 +148,22 @@ public class WorshipServiceApi {
                 .retrieve()
                 .bodyToMono(String.class)
                 .block();
+    }
 
-
+    public void registerPodcastMp3ToPodcastRegistry(Integer serviceID, String podcastFileName, Long fileSize, Integer duration) {
+        webClient.post()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/actions/media/checkin")
+                        .queryParam("format", "mp3")
+                        .queryParam("service_id", serviceID)
+                        .queryParam("filename", podcastFileName)
+                        .queryParam("filesize", fileSize)
+                        .queryParam("duration", duration)
+                        .queryParam("user", "streaming_czs")
+                        .build()
+                )
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
     }
 }

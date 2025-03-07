@@ -8,8 +8,11 @@ import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import io.kellermann.config.VideoConfiguration;
+import io.kellermann.model.gdVerwaltung.WorshipMetaData;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -185,8 +188,8 @@ public class JaffreeFFmpegService {
                 .addArguments("-filter_complex", concatAudioCrossFadeFilterBuilder(audioSegments.size(), crossFadeDuration) + ";[a]loudnorm=" + videoConfiguration.getLoudnormParameter() + " [aud]");
 
         fFmpeg.addOutput(UrlOutput.toPath(output)
-                .addArguments("-acodec", "libmp3lame")
-                .addArguments("-b:a", "192000")
+//                .addArguments("-acodec", "libmp3lame")
+//                .addArguments("-b:a", "192000")
                 .addArguments("-map", "[aud]")
                 .addArguments("-preset", "fast")
         );
@@ -345,6 +348,40 @@ public class JaffreeFFmpegService {
                     }
                 })
                 .execute();
+    }
+
+    public void convertToPodcastMp3WithMetadata(Path input, Path albumart, Path output, WorshipMetaData worshipMetaData) throws IOException {
+        Files.deleteIfExists(output);
+        FFmpeg
+                .atPath()
+                .addInput(UrlInput.fromPath(input))
+                .addInput(UrlInput.fromPath(albumart))
+                .addOutput(UrlOutput.toPath(output)
+                        .addArguments("-map", "0:0")
+                        .addArguments("-map", "1:0")
+                        .addArguments("-c", "copy")
+                        .addArguments("-id3v2_version", "4")
+                        .addArguments("-codec:a", "libmp3lame")
+                        .addArguments("-b:a", "128k")
+                        .addArguments("-metadata", "artist=" + worshipMetaData.getPerson().getFirstName() + " " + worshipMetaData.getPerson().getLastName())
+                        .addArguments("-metadata", "title=" + worshipMetaData.getServiceTitle(worshipMetaData.getServiceLanguage()))
+                        .addArguments("-metadata", "genre=" + "Predigt")
+                        .addArguments("-metadata", "album=" + worshipMetaData.getCampusShortname())
+                        .addArguments("-metadata", "year=" + worshipMetaData.getStartDate().getYear())
+
+                        .addArguments("-metadata:s:v", "title=" + "Album cover")
+                        .addArguments("-metadata:s:v", "title=" + "Cover (front)")
+                        .addArguments("-pix_fmt", "yuv420p")
+                        .addArguments("-metadata", "TIT3=" + worshipMetaData.getServiceTitle(worshipMetaData.getServiceLanguage()) + " (" + worshipMetaData.getPerson().getFirstName() + " " + worshipMetaData.getPerson().getLastName() + ")")
+                )
+                .setOutputListener(new OutputListener() {
+                    @Override
+                    public void onOutput(String s) {
+                        System.out.println(s);
+                    }
+                })
+                .execute();
+
     }
 
 }
