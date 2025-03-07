@@ -2,6 +2,7 @@ package io.kellermann.services.youtube;
 
 import io.kellermann.config.VideoConfiguration;
 import io.kellermann.model.gdVerwaltung.WorshipMetaData;
+import io.kellermann.services.UtilityComponent;
 import io.kellermann.services.video.GdGenerationService;
 import io.kellermann.services.video.JaffreeFFmpegService;
 import jakarta.annotation.PostConstruct;
@@ -43,15 +44,17 @@ public class ThumbnailService {
 
 
     private final VideoConfiguration videoConfiguration;
+    private final UtilityComponent utilityComponent;
     private JaffreeFFmpegService jaffreeFFmpegService;
     private GdGenerationService gdGenerationService;
     private CascadeClassifier faceClassifier;
     private CascadeClassifier eyeClassifier;
 
-    public ThumbnailService(VideoConfiguration videoConfiguration, JaffreeFFmpegService jaffreeFFmpegService, GdGenerationService gdGenerationService) {
+    public ThumbnailService(VideoConfiguration videoConfiguration, JaffreeFFmpegService jaffreeFFmpegService, GdGenerationService gdGenerationService, UtilityComponent utilityComponent) {
         this.videoConfiguration = videoConfiguration;
         this.jaffreeFFmpegService = jaffreeFFmpegService;
         this.gdGenerationService = gdGenerationService;
+        this.utilityComponent = utilityComponent;
     }
 
     public void generateThumbnails(WorshipMetaData worshipMetaData) throws IOException {
@@ -70,7 +73,7 @@ public class ThumbnailService {
         jaffreeFFmpegService.generateImageFromVideo(
                 videoConfiguration.getGdVideoStartTime(),
                 videoConfiguration.getGdVideoEndTime(),
-                gdGenerationService.getMainRecording(worshipMetaData),
+                utilityComponent.getMainRecording(worshipMetaData),
                 allImages,
                 2);
 
