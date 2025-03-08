@@ -98,9 +98,9 @@ public class JaffreeFFmpegService {
                         .addArguments("-to", end.format(dateTimeFormatter)));
         if (onlyAudio) {
             ffmpegPack
-                    .addOutput(UrlOutput.toPath(output)
-                            .setCodec(StreamType.AUDIO, "copy")
-                            .addArguments("-b:a", "192k"));
+                    .addOutput(UrlOutput.toPath(output));
+//                            .setCodec(StreamType.AUDIO, "copy")
+//                            .addArguments("-b:a", "192k"));
         } else {
             ffmpegPack
                     .addOutput(UrlOutput.toPath(output)
@@ -310,7 +310,8 @@ public class JaffreeFFmpegService {
         if (numberOfFiles > 1) {
             command = new StringBuilder("[0][1]acrossfade=d=" + duration + ":c1=tri:c2=tri");
             for (int i = 2; i < numberOfFiles; i++) {
-                command.append("[a").append(i - 1).append("];").append("[a").append(i - 1).append("][1]acrossfade=d=").append(duration).append(":c1=tri:c2=tri");
+                command.append("[a").append(i - 1).append("];")
+                        .append("[a").append(i - 1).append("][").append(i).append("]acrossfade=d=").append(duration).append(":c1=tri:c2=tri");
             }
             command.append("[a]");
         }

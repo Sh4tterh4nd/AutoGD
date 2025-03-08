@@ -23,6 +23,7 @@ import java.util.Objects;
 public class Main implements CommandLineRunner {
 
     private final GdGenerationService gdGenerationService;
+    private final JaffreeFFmpegService jaffreeFFmpegService;
     private GdGenerationService gdVidGenService;
     private VideoConfiguration videoConfig;
     private GDManagementConfig gdConfig;
@@ -41,7 +42,7 @@ public class Main implements CommandLineRunner {
 
     public Main(GdGenerationService gdVidGenService, VideoConfiguration videoConfig, GDManagementConfig gdConfig,
                 WorshipServiceApi worshipServiceApi, JaffreeFFmpegService jffmpegService, YoutubeConfiguration configuration, YoutubeUploader youtubeUploader,
-                ThumbnailService thumbnailService, GdGenerationService gdGenerationService, PodcastGenerationService podcastGenerationService) {
+                ThumbnailService thumbnailService, GdGenerationService gdGenerationService, PodcastGenerationService podcastGenerationService, JaffreeFFmpegService jaffreeFFmpegService) {
         this.gdVidGenService = gdVidGenService;
         this.videoConfig = videoConfig;
         this.gdConfig = gdConfig;
@@ -52,6 +53,7 @@ public class Main implements CommandLineRunner {
         this.thumbnailService = thumbnailService;
         this.gdGenerationService = gdGenerationService;
         this.podcastGenerationService = podcastGenerationService;
+        this.jaffreeFFmpegService = jaffreeFFmpegService;
     }
 
     public static void main(String[] args) {
@@ -66,14 +68,11 @@ public class Main implements CommandLineRunner {
         if (Objects.nonNull(worshipMetaData)) {
             Path outputPath = gdVidGenService.gemerateGDVideo(worshipMetaData);
 
-            podcastGenerationService.generateGDPodcast(worshipMetaData);
-
-
 
             thumbnailService.generateThumbnails(worshipMetaData);
             String url = youtubeUploader.uploadToYoutube(outputPath, worshipMetaData);
 
-
+            podcastGenerationService.generateGDPodcast(worshipMetaData);
             worshipServiceApi.submitYoutubeUrlToGDManagement(url, worshipMetaData);
         } else {
             throw new Exception("Couldn't find any worship data. Try specify date and time of worship in the application.yml");

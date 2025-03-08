@@ -65,7 +65,7 @@ public class WorshipServiceApi {
         } else {
             mono = webClient.get()
                     .uri(uriBuilder -> uriBuilder
-                            .pathSegment("media", "services", "images", worshipMetaData.getServiceImage())
+                            .pathSegment("media", "services", imageType.equals(ImageType.ALBUMART) ? "albumart" : "images", worshipMetaData.getServiceImage())
                             .build())
                     .retrieve()
                     .bodyToMono(byte[].class);
