@@ -25,6 +25,7 @@ public class WorshipServiceApi {
     private WebClient webClient;
     private GDManagementConfig config;
 
+
     public WorshipServiceApi(WebClient theWebClient, GDManagementConfig theConfig) {
         webClient = theWebClient;
         config = theConfig;
@@ -89,7 +90,7 @@ public class WorshipServiceApi {
     }
 
     /**
-     * Returns Worships by Date
+     * Returns all Worships from specific date
      *
      * @param theLocalDate
      * @return
@@ -100,6 +101,43 @@ public class WorshipServiceApi {
                 .filter(this::locationFilter)
                 .filter(s -> s.getStartDate().isEqual(theLocalDate))
                 .toList();
+    }
+
+    public List<WorshipMetaData> getAllWorshipsFromTheMostRecentWorshipDay(LocalDate theLocalDate) {
+        List<WorshipMetaData> allWorshipsPreviousToDate = getAllWorshipsPreviousToDate(theLocalDate);
+        if (allWorshipsPreviousToDate.isEmpty()) {
+            return allWorshipsPreviousToDate;
+        }
+        LocalDate startDate = allWorshipsPreviousToDate.getFirst().getStartDate();
+
+        return allWorshipsPreviousToDate
+                .stream()
+                .filter(s -> s.getStartDate().isEqual(startDate))
+                .toList();
+    }
+
+    /**
+     * Returns Worships by Date
+     *
+     * @param theLocalDate
+     * @return
+     */
+    public List<WorshipMetaData> getAllWorshipsPreviousToDate(LocalDate theLocalDate) {
+        return getAvailableWorships()
+                .stream()
+                .filter(this::locationFilter)
+                .filter(s -> s.getStartDate().isBefore(theLocalDate) || s.getStartDate().isEqual(theLocalDate))
+                .sorted(Comparator.comparing(WorshipMetaData::getStartDate).reversed())
+                .toList();
+    }
+
+
+    public WorshipMetaData getWorshipByServiceId(Integer serviceId) {
+        return getAvailableWorships()
+                .stream()
+                .filter(s -> s.getServiceID().equals(serviceId))
+                .findFirst()
+                .get();
     }
 
 

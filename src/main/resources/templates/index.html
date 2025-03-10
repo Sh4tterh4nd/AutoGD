@@ -9,7 +9,65 @@
 <body>
 
 <th:block layout:fragment="content">
+
     Test Fragment
+    <div class="row">
+        <div class="col">
+            <video id="player" controls preload="metadata" style="width: 100%; height: auto">
+                <source src="http://localhost:8099/api/service/stream/13650" type="video/mp4">
+            </video>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <button id="start" class="btn btn-primary">Start</button>
+            <button id="end" class="btn btn-primary">End</button>
+            <button id="" class="btn btn-danger">Start Generation</button>
+        </div>
+    </div>
+
+    <p>StartTime: <span id="startTime"></span></p>
+    <p>EndTime: <span id="endTime"></span></p>
+
+    <script>
+        function printTimes() {
+            document.getElementById('startTime').textContent = formatTime(startTime);
+            document.getElementById('endTime').textContent = formatTime(endTime);
+        }
+
+        function formatTime(seconds) {
+            var date = new Date(null);
+            date.setMilliseconds(seconds * 1000);
+            return date.toISOString().substr(11, 11);
+        }
+
+        setInterval(printTimes, 1000);
+
+        var player = document.getElementById('player');
+        var startButton = document.getElementById('start');
+        var endButton = document.getElementById('end');
+        var startTime = null;
+        var endTime = null;
+
+        startButton.addEventListener("click", function () {
+            startTime = player.currentTime;
+
+        });
+        endButton.addEventListener("click", function () {
+            endTime = player.currentTime;
+        });
+
+        document.getElementById('startGeneration').addEventListener("click", function () {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", 'http://localhost:8099/api/service/generate', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify({
+                "startTime": startTime,
+                "endTime": endTime
+            }));
+        });
+
+    </script>
 </th:block>
 </body>
 </html>

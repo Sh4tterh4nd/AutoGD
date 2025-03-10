@@ -1,6 +1,7 @@
 package io.kellermann.components;
 
 import io.kellermann.config.PodcastConfiguration;
+import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
@@ -64,6 +65,8 @@ public class FtpConnector {
 
         ftp.enterLocalPassiveMode();
         ftp.login(podcastConfiguration.getUsername(), podcastConfiguration.getPassword());
+        ftp.setFileType(FTP.BINARY_FILE_TYPE);
+//        ftp.setFileTransferMode(FTP.BINARY_FILE_TYPE);
         return ftp;
     }
 
