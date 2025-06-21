@@ -137,7 +137,7 @@ public class WorshipServiceApi {
                 .stream()
                 .filter(s -> s.getServiceID().equals(serviceId))
                 .findFirst()
-                .get();
+                .orElse(new WorshipMetaData());
     }
 
 
@@ -161,7 +161,7 @@ public class WorshipServiceApi {
     }
 
     public WorshipMetaData getMostRecentWorship() {
-        return getWorshipsByDate(config.getDate())
+        return getWorshipsByDate(LocalDate.now())
                 .stream()
                 .filter(this::isPassed)
                 .sorted(Comparator.reverseOrder())

@@ -9,25 +9,39 @@
 <body>
 
 <th:block layout:fragment="content">
-
-    Test Fragment
+    <select name="datas" id="worshipselect"
+            onchange="this.options[this.selectedIndex].value && (window.location = '/?id=' + this.options[this.selectedIndex].value);">
+        <th:block th:each="worship, iStat: ${lastWorships}">
+            <option th:value="${worship.getServiceID()}"
+                    th:text="${worship.startDate + ' ' + worship.getServiceTitle(worship.getServiceLanguage())}"></option>
+        </th:block>
+    </select>
     <div class="row">
         <div class="col">
             <video id="player" controls preload="metadata" style="width: 100%; height: auto">
-                <source src="http://localhost:8099/api/service/stream/13650" type="video/mp4">
+                <source th:src="${'http://localhost:8099/api/service/stream/' + worshipMetadata.getServiceID()}"
+                        type="video/mp4">
             </video>
         </div>
     </div>
+
     <div class="row">
         <div class="col">
             <button id="start" class="btn btn-primary">Start</button>
             <button id="end" class="btn btn-primary">End</button>
-            <button id="" class="btn btn-danger">Start Generation</button>
+            <button id="startGeneration" class="btn btn-danger">Start Generation</button>
         </div>
     </div>
 
+
     <p>StartTime: <span id="startTime"></span></p>
     <p>EndTime: <span id="endTime"></span></p>
+
+    <div>
+        <p th:text="${worshipMetadata.getServiceTitle(worshipMetadata.getServiceLanguage())}">De</p>
+        <p th:text="${worshipMetadata.getServiceID()}"></p>
+    </div>
+
 
     <script>
         function printTimes() {
@@ -41,8 +55,9 @@
             return date.toISOString().substr(11, 11);
         }
 
-        setInterval(printTimes, 1000);
-
+        // setInterval(printTimes, 1000);
+        var worshipMetaDataDto = null;
+        var worshipMetaDataDtos = null;
         var player = document.getElementById('player');
         var startButton = document.getElementById('start');
         var endButton = document.getElementById('end');
@@ -51,10 +66,12 @@
 
         startButton.addEventListener("click", function () {
             startTime = player.currentTime;
+            printTimes();
 
         });
         endButton.addEventListener("click", function () {
             endTime = player.currentTime;
+            printTimes();
         });
 
         document.getElementById('startGeneration').addEventListener("click", function () {
@@ -62,10 +79,48 @@
             xhr.open("POST", 'http://localhost:8099/api/service/generate', true);
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.send(JSON.stringify({
-                "startTime": startTime,
-                "endTime": endTime
+                "startTime": formatTime(startTime),
+                "endTime": formatTime(endTime),
+                "serviceId": "5641"
             }));
         });
+
+
+        // var xhr = new XMLHttpRequest();
+        // xhr.open("GET", 'http://localhost:8099/api/service', true);
+        // xhr.onload = function () {
+        //     if (xhr.status === 200) {
+        //         worshipMetaDataDto = JSON.parse(xhr.responseText);
+        //         console.log(worshipMetaDataDto);
+        //         var details = document.createElement('div');
+        //         details.innerHTML = "<h2>WorshipDetails</h2>" +
+        //             "Title: " + worshipMetaDataDto.mainLanguageTitle + "<br>" +
+        //             "Date: " + worshipMetaDataDto.series + "<br>" +
+        //             "ServiceId: " + worshipMetaDataDto.serviceID + "<br>";
+        //         document.body.appendChild(details);
+        //     }
+        // };
+        // xhr.send();
+
+
+        // var xhr2 = new XMLHttpRequest();
+        // xhr2.open("GET", 'http://localhost:8099/api/services', true);
+        // xhr2.onload = function () {
+        //     if (xhr2.status === 200) {
+        //         worshipMetaDataDtos = JSON.parse(xhr2.responseText);
+        //         console.log(worshipMetaDataDto);
+        //         var details = document.getElementById('worshipselect');
+        //         var html = '';
+        //         worshipMetaDataDtos.forEach((item) =>
+        //             html += "<option value=" + item.serviceID + ">" + item.date + ": " + item.mainLanguageTitle + "</option>"
+        //         )
+        //         details.innerHTML = html;
+        //     }
+        // };
+        // xhr2.send();
+
+
+
 
     </script>
 </th:block>

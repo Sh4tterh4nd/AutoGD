@@ -1,11 +1,17 @@
 spring:
-  main:
-    web-application-type: none
+  thymeleaf:
+    cache: false
 
-#logging:
+server:
+  port: 8099
+
+  #logging:
 #  level:
 #    com:
 #      github: ERROR
+
+
+
 
 autogd:
   video:
@@ -18,7 +24,7 @@ autogd:
 
 
     gdVideoStartTime: "00:22:53.5"
-    gdVideoEndTime: "00:23:10.5"
+    gdVideoEndTime: "00:29:10.5"
 
 
     precodec-param: ""
@@ -48,15 +54,15 @@ autogd:
     for-kids: false
     privacy-status: public
   gdverwaltung:
-    token:
+    token: "6yZcTOhgWPKDmAc1t5PbtubV59Vkz8LSgI3r09zk"
     select:
       location: "Silbern"
-      date:
-      time:
+      date: "02.03.2025"
+      time: "11:00"
 
   podcast:
-    domain:
-    port:
-    path:
-    username:
-    password:
+    domain: download.meine.church
+    port: 21
+    path: /web/media/silbern/mp3/
+    username: ftpuploader
+    password: C6yt@Sby%tt_ZHRt

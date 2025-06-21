@@ -4,5 +4,6 @@ public enum StatusKeys {
     THUMBNAIL,
     INTRO_RENDERING,
     RENDERING,
-    UPLOADING
+    UPLOADING,
+    PODCAST
 }

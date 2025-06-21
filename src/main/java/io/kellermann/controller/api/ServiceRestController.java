@@ -1,12 +1,19 @@
 package io.kellermann.controller.api;
 
+import io.kellermann.model.dto.WorshipMetaDataDTO;
+import io.kellermann.model.gd.GdJob;
+import io.kellermann.model.gd.Status;
 import io.kellermann.model.gdVerwaltung.WorshipMetaData;
+import io.kellermann.services.DtoConverter;
+import io.kellermann.services.StatusService;
 import io.kellermann.services.UtilityComponent;
 import io.kellermann.services.gdManagement.WorshipServiceApi;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,19 +27,28 @@ import java.util.Map;
 @RequestMapping("api/service")
 @RestController
 public class ServiceRestController {
-    private WorshipServiceApi worshipServiceApi;
-    private UtilityComponent utilityComponent;
+    private final WorshipServiceApi worshipServiceApi;
+    private final UtilityComponent utilityComponent;
+    private final StatusService statusService;
+    private final DtoConverter converter;
     Map<Integer, WorshipMetaData> worshipMetaDataMap = new HashMap<Integer, WorshipMetaData>();
 
-    public ServiceRestController(WorshipServiceApi worshipServiceApi, UtilityComponent utilityComponent) {
-        this.worshipServiceApi = worshipServiceApi;
+    public ServiceRestController(DtoConverter converter, StatusService statusService, UtilityComponent utilityComponent, WorshipServiceApi worshipServiceApi) {
+        this.converter = converter;
+        this.statusService = statusService;
         this.utilityComponent = utilityComponent;
+        this.worshipServiceApi = worshipServiceApi;
     }
 
     @GetMapping()
-    public WorshipMetaData getWorshipMetaDataByDate(@RequestParam(required = false, defaultValue = "#{T(java.time.LocalDate).now()}") LocalDate time) {
-        System.out.println(time);
-        return worshipServiceApi.getWorshipsByDate(LocalDate.now()).getFirst();
+    public WorshipMetaDataDTO getWorshipMetaDataByDate(
+            @RequestParam(required = false) LocalDate date,
+            @RequestParam(required = false) Integer serviceId) {
+        date = date == null ? LocalDate.now() : date;
+        if (serviceId != null) {
+            return converter.worshipMetaDataToDto(worshipServiceApi.getWorshipByServiceId(serviceId));
+        }
+        return converter.worshipMetaDataToDto(worshipServiceApi.getAllWorshipsFromTheMostRecentWorshipDay(date).getFirst());
     }
 
 
@@ -43,9 +59,20 @@ public class ServiceRestController {
             worshipMetaData = worshipServiceApi.getWorshipByServiceId(id);
             worshipMetaDataMap.put(id, worshipMetaData);
         }
-
         Path mainRecording = utilityComponent.getMainRecording(worshipMetaData);
         return ResponseEntity.ok().body(new FileSystemResource(mainRecording));
     }
+
+
+    @PostMapping("/generate")
+    public ResponseEntity<String> generateGD(@RequestBody GdJob job) {
+        return ResponseEntity.ok().body("");
+    }
+
+    @GetMapping("/status/{id}")
+    public Status getStatus(@PathVariable Integer id) {
+        return statusService.getStatus(id);
+    }
+
 
 }

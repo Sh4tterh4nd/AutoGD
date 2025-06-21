@@ -66,7 +66,7 @@ public class FtpConnector {
         ftp.enterLocalPassiveMode();
         ftp.login(podcastConfiguration.getUsername(), podcastConfiguration.getPassword());
         ftp.setFileType(FTP.BINARY_FILE_TYPE);
-//        ftp.setFileTransferMode(FTP.BINARY_FILE_TYPE);
+        ftp.setFileTransferMode(FTP.BINARY_FILE_TYPE);
         return ftp;
     }
 

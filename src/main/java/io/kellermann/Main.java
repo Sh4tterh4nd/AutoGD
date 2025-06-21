@@ -16,7 +16,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.nio.file.Path;
-import java.util.Objects;
+import java.time.LocalDate;
 
 @SpringBootApplication
 @AutoConfiguration
@@ -64,19 +64,21 @@ public class Main implements CommandLineRunner {
     public void run(String... args) throws Exception {
         WorshipMetaData worshipMetaData = worshipServiceApi.getMostRecentWorship();
 
-
-        if (Objects.nonNull(worshipMetaData)) {
+        System.out.println("Start");
+        worshipServiceApi.getAllWorshipsFromTheMostRecentWorshipDay(LocalDate.now()).forEach(System.out::println);
+//
+//        if (Objects.nonNull(worshipMetaData)) {
             Path outputPath = gdVidGenService.gemerateGDVideo(worshipMetaData);
-
-
-            thumbnailService.generateThumbnails(worshipMetaData);
-            String url = youtubeUploader.uploadToYoutube(outputPath, worshipMetaData);
-
-            podcastGenerationService.generateGDPodcast(worshipMetaData);
-            worshipServiceApi.submitYoutubeUrlToGDManagement(url, worshipMetaData);
-        } else {
-            throw new Exception("Couldn't find any worship data. Try specify date and time of worship in the application.yml");
-        }
+//
+//
+//            thumbnailService.generateThumbnails(worshipMetaData);
+//            String url = youtubeUploader.uploadToYoutube(outputPath, worshipMetaData);
+//
+//            podcastGenerationService.generateGDPodcast(worshipMetaData);
+//            worshipServiceApi.submitYoutubeUrlToGDManagement(url, worshipMetaData);
+//        } else {
+//            throw new Exception("Couldn't find any worship data. Try specify date and time of worship in the application.yml");
+//        }
 
     }
 }
