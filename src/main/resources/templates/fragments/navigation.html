@@ -15,6 +15,15 @@
 
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
+                    <select class="form-control" style="width: 15em" id="worshipselect"
+                            onchange="this.options[this.selectedIndex].value && (window.location = '/?id=' + this.options[this.selectedIndex].value);">
+                        <th:block th:each="worship, iStat: ${lastWorships}">
+                            <option th:value="${worship.getServiceID()}"
+                                    th:text="${worship.startDate + ' ' + worship.getServiceTitle(worship.getServiceLanguage())}"></option>
+                        </th:block>
+                    </select>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="/index">Video</a>
                 </li>
                 <li class="nav-item">

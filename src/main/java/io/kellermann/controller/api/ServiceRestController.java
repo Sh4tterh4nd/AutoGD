@@ -66,6 +66,7 @@ public class ServiceRestController {
 
     @PostMapping("/generate")
     public ResponseEntity<String> generateGD(@RequestBody GdJob job) {
+        System.out.println(job);
         return ResponseEntity.ok().body("");
     }
 

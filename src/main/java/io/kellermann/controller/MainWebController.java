@@ -22,11 +22,9 @@ public class MainWebController {
     @GetMapping()
     public String index(@RequestParam(required = false) Integer id, Model model) {
         if (Objects.isNull(id)) {
-            return "redirect:/?id=" + worshipServiceApi.getMostRecentWorship().getServiceID();
+            return "redirect:/?id=" + worshipServiceApi.getAllWorshipsPreviousToDate(LocalDate.now()).getFirst().getServiceID();
         }
-
         model.addAttribute("worshipMetadata", worshipServiceApi.getWorshipByServiceId(id));
-        model.addAttribute("lastWorships", worshipServiceApi.getAllWorshipsPreviousToDate(LocalDate.now()));
         return "index";
     }
 

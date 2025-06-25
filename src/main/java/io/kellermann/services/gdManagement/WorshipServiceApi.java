@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -24,7 +25,7 @@ import java.util.Objects;
 public class WorshipServiceApi {
     private WebClient webClient;
     private GDManagementConfig config;
-
+    List<WorshipMetaData> cachedMetaData = new ArrayList<>();
 
     public WorshipServiceApi(WebClient theWebClient, GDManagementConfig theConfig) {
         webClient = theWebClient;
@@ -37,13 +38,16 @@ public class WorshipServiceApi {
      * @return
      */
     public List<WorshipMetaData> getAvailableWorships() {
-        WorshipMetaData[] response = webClient
-                .get()
-                .uri("/interfaces/services/list")
-                .retrieve()
-                .bodyToMono(WorshipMetaData[].class)
-                .block();
-        return Arrays.asList(response);
+        if (cachedMetaData.isEmpty()) {
+            cachedMetaData = Arrays.asList(webClient
+                    .get()
+                    .uri("/interfaces/services/list")
+                    .retrieve()
+                    .bodyToMono(WorshipMetaData[].class)
+                    .block());
+        }
+
+        return cachedMetaData;
     }
 
 
@@ -130,6 +134,11 @@ public class WorshipServiceApi {
                 .sorted(Comparator.comparing(WorshipMetaData::getStartDate).reversed())
                 .toList();
     }
+
+    public List<WorshipMetaData> getAllWorshipsPreviousToToday() {
+        return getAllWorshipsPreviousToDate(LocalDate.now());
+    }
+
 
 
     public WorshipMetaData getWorshipByServiceId(Integer serviceId) {
