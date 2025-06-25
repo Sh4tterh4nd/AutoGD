@@ -3,8 +3,8 @@ package io.kellermann.services.youtube;
 import io.kellermann.config.VideoConfiguration;
 import io.kellermann.model.gdVerwaltung.WorshipMetaData;
 import io.kellermann.services.UtilityComponent;
-import io.kellermann.services.video.GdGenerationService;
 import io.kellermann.services.video.JaffreeFFmpegService;
+import io.kellermann.services.video.VideoGenerationService;
 import jakarta.annotation.PostConstruct;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
@@ -46,14 +46,14 @@ public class ThumbnailService {
     private final VideoConfiguration videoConfiguration;
     private final UtilityComponent utilityComponent;
     private JaffreeFFmpegService jaffreeFFmpegService;
-    private GdGenerationService gdGenerationService;
+    private VideoGenerationService videoGenerationService;
     private CascadeClassifier faceClassifier;
     private CascadeClassifier eyeClassifier;
 
-    public ThumbnailService(VideoConfiguration videoConfiguration, JaffreeFFmpegService jaffreeFFmpegService, GdGenerationService gdGenerationService, UtilityComponent utilityComponent) {
+    public ThumbnailService(VideoConfiguration videoConfiguration, JaffreeFFmpegService jaffreeFFmpegService, VideoGenerationService videoGenerationService, UtilityComponent utilityComponent) {
         this.videoConfiguration = videoConfiguration;
         this.jaffreeFFmpegService = jaffreeFFmpegService;
-        this.gdGenerationService = gdGenerationService;
+        this.videoGenerationService = videoGenerationService;
         this.utilityComponent = utilityComponent;
     }
 

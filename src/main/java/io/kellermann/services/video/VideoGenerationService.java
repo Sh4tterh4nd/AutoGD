@@ -14,13 +14,13 @@ import java.util.Objects;
 
 
 @Service
-public class GdGenerationService {
+public class VideoGenerationService {
     private VideoConfiguration videoConfiguration;
     private JaffreeFFmpegService jaffreeFFmpegService;
     private WorshipServiceApi worshipServiceApi;
     private UtilityComponent utility;
 
-    public GdGenerationService(VideoConfiguration videoConfiguration, JaffreeFFmpegService jaffreeFFmpegService, WorshipServiceApi worshipServiceApi, UtilityComponent utilityComponent) {
+    public VideoGenerationService(VideoConfiguration videoConfiguration, JaffreeFFmpegService jaffreeFFmpegService, WorshipServiceApi worshipServiceApi, UtilityComponent utilityComponent) {
         this.videoConfiguration = videoConfiguration;
         this.jaffreeFFmpegService = jaffreeFFmpegService;
         this.worshipServiceApi = worshipServiceApi;
@@ -33,7 +33,7 @@ public class GdGenerationService {
      * @throws IOException
      */
     public Path gemerateGDVideo(WorshipMetaData worshipMetaData) throws IOException {
-        setupWorkspace();
+        setupWorkspace(videoConfiguration.getTempWorkspace());
         Path tempWorkspace = videoConfiguration.getTempWorkspace();
         Path widescreenImage;
         if (Objects.isNull(worshipMetaData.getServiceImage()) || worshipMetaData.getServiceImage().isBlank()) {
@@ -68,19 +68,18 @@ public class GdGenerationService {
         //Generate podcast
         jaffreeFFmpegService.convertToWav(videoConfiguration.getOutput().resolve("finalGD.mp4"), videoConfiguration.getWavTarget().resolve("podcast.wav"));
 
-        setupWorkspace();
+        setupWorkspace(videoConfiguration.getTempWorkspace());
 
         return videoConfiguration.getOutput().resolve("finalGD.mp4");
     }
 
 
-
-    public void setupWorkspace() {
-        if (Files.exists(videoConfiguration.getTempWorkspace())) {
-            utility.clearDirectory(videoConfiguration.getTempWorkspace());
+    public void setupWorkspace(Path path) {
+        if (Files.exists(path)) {
+            utility.clearDirectory(path);
         } else {
             try {
-                Files.createDirectories(videoConfiguration.getTempWorkspace());
+                Files.createDirectories(path);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

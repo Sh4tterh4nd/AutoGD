@@ -1,4 +1,4 @@
-package io.kellermann.controller;
+package io.kellermann.controller.web;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

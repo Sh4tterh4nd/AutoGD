@@ -1,4 +1,4 @@
-package io.kellermann.controller;
+package io.kellermann.controller.web;
 
 import io.kellermann.services.gdManagement.WorshipServiceApi;
 import org.springframework.stereotype.Controller;

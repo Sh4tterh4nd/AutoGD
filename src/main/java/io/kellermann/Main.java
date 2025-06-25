@@ -5,9 +5,9 @@ import io.kellermann.config.VideoConfiguration;
 import io.kellermann.config.YoutubeConfiguration;
 import io.kellermann.model.gdVerwaltung.WorshipMetaData;
 import io.kellermann.services.gdManagement.WorshipServiceApi;
-import io.kellermann.services.video.GdGenerationService;
 import io.kellermann.services.video.JaffreeFFmpegService;
 import io.kellermann.services.video.PodcastGenerationService;
+import io.kellermann.services.video.VideoGenerationService;
 import io.kellermann.services.youtube.ThumbnailService;
 import io.kellermann.services.youtube.YoutubeUploader;
 import org.springframework.boot.CommandLineRunner;
@@ -15,16 +15,15 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.nio.file.Path;
 import java.time.LocalDate;
 
 @SpringBootApplication
 @AutoConfiguration
 public class Main implements CommandLineRunner {
 
-    private final GdGenerationService gdGenerationService;
+    private final VideoGenerationService videoGenerationService;
     private final JaffreeFFmpegService jaffreeFFmpegService;
-    private GdGenerationService gdVidGenService;
+    private VideoGenerationService gdVidGenService;
     private VideoConfiguration videoConfig;
     private GDManagementConfig gdConfig;
 
@@ -40,9 +39,9 @@ public class Main implements CommandLineRunner {
 
     private PodcastGenerationService podcastGenerationService;
 
-    public Main(GdGenerationService gdVidGenService, VideoConfiguration videoConfig, GDManagementConfig gdConfig,
+    public Main(VideoGenerationService gdVidGenService, VideoConfiguration videoConfig, GDManagementConfig gdConfig,
                 WorshipServiceApi worshipServiceApi, JaffreeFFmpegService jffmpegService, YoutubeConfiguration configuration, YoutubeUploader youtubeUploader,
-                ThumbnailService thumbnailService, GdGenerationService gdGenerationService, PodcastGenerationService podcastGenerationService, JaffreeFFmpegService jaffreeFFmpegService) {
+                ThumbnailService thumbnailService, VideoGenerationService videoGenerationService, PodcastGenerationService podcastGenerationService, JaffreeFFmpegService jaffreeFFmpegService) {
         this.gdVidGenService = gdVidGenService;
         this.videoConfig = videoConfig;
         this.gdConfig = gdConfig;
@@ -51,7 +50,7 @@ public class Main implements CommandLineRunner {
         this.configuration = configuration;
         this.youtubeUploader = youtubeUploader;
         this.thumbnailService = thumbnailService;
-        this.gdGenerationService = gdGenerationService;
+        this.videoGenerationService = videoGenerationService;
         this.podcastGenerationService = podcastGenerationService;
         this.jaffreeFFmpegService = jaffreeFFmpegService;
     }
@@ -68,7 +67,7 @@ public class Main implements CommandLineRunner {
         worshipServiceApi.getAllWorshipsFromTheMostRecentWorshipDay(LocalDate.now()).forEach(System.out::println);
 //
 //        if (Objects.nonNull(worshipMetaData)) {
-            Path outputPath = gdVidGenService.gemerateGDVideo(worshipMetaData);
+//            Path outputPath = gdVidGenService.gemerateGDVideo(worshipMetaData).gemerateGDVideo(worshipMetaData);
 //
 //
 //            thumbnailService.generateThumbnails(worshipMetaData);

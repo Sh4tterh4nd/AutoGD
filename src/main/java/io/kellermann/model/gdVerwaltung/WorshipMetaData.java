@@ -32,6 +32,9 @@ public class WorshipMetaData implements Comparable<WorshipMetaData> {
 	@JsonProperty("service_albumart")
 	private String service_albumart;
 
+	@JsonProperty("service_videolink")
+	private String videoLink;
+
 	private SeriesMetaData series;
 
 	private PersonMetaData person;
@@ -124,6 +127,14 @@ public class WorshipMetaData implements Comparable<WorshipMetaData> {
 
 	public void setService_albumart(String service_albumart) {
 		this.service_albumart = service_albumart;
+	}
+
+	public String getVideoLink() {
+		return videoLink;
+	}
+
+	public void setVideoLink(String videoLink) {
+		this.videoLink = videoLink;
 	}
 
 	@Override

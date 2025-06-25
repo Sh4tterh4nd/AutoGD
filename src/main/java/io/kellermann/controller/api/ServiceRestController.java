@@ -2,7 +2,6 @@ package io.kellermann.controller.api;
 
 import io.kellermann.model.dto.WorshipMetaDataDTO;
 import io.kellermann.model.gd.GdJob;
-import io.kellermann.model.gd.Status;
 import io.kellermann.model.gdVerwaltung.WorshipMetaData;
 import io.kellermann.services.DtoConverter;
 import io.kellermann.services.StatusService;
@@ -68,11 +67,6 @@ public class ServiceRestController {
     public ResponseEntity<String> generateGD(@RequestBody GdJob job) {
         System.out.println(job);
         return ResponseEntity.ok().body("");
-    }
-
-    @GetMapping("/status/{id}")
-    public Status getStatus(@PathVariable Integer id) {
-        return statusService.getStatus(id);
     }
 
 
