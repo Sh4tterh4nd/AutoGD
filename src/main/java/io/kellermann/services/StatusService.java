@@ -1,8 +1,8 @@
 package io.kellermann.services;
 
 import io.kellermann.model.gd.Message;
+import io.kellermann.model.gd.Status;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -17,26 +17,25 @@ public class StatusService {
         this.simpMessagingTemplate = simpMessagingTemplate;
     }
 
-    @Scheduled(fixedRate = 2000)
-    public void sendMessage() {
-        final String time = new SimpleDateFormat("HH:mm").format(new Date());
-        simpMessagingTemplate.convertAndSend("/topic/message",
-                new Message(time, "Test Test"));
+
+    public void sendLogUpdate(String message) {
+        simpMessagingTemplate.convertAndSend("/topic/logs",
+                new Message(new SimpleDateFormat("HH:mm").format(new Date()), message));
     }
 
-    public void sendStatusUpdate(String message) {
-        simpMessagingTemplate.convertAndSend("/topic/message",
-                new Message(message, new SimpleDateFormat("HH:mm").format(new Date())));
-    }
-
-    public void sendDetailStatus(String message) {
+    public void sendDetailStatus(String message, int progress) {
         simpMessagingTemplate.convertAndSend("/topic/detailstatus",
-                new Message(message, new SimpleDateFormat("HH:mm").format(new Date())));
+                new Status(message, progress));
     }
 
-    public void sendMainStatus(String message) {
+    public void sendVideoStatus() {
+        simpMessagingTemplate.convertAndSend("/topic/video",
+                new Status("Test", 1));
+    }
+
+    public void sendMainStatus() {
         simpMessagingTemplate.convertAndSend("/topic/mainstatus",
-                new Message(message, new SimpleDateFormat("HH:mm").format(new Date())));
+                new Status("Test", 1));
     }
 
 }

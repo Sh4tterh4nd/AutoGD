@@ -1,8 +1,10 @@
 package io.kellermann.services.video;
 
 import io.kellermann.config.VideoConfiguration;
+import io.kellermann.model.gd.GdJob;
 import io.kellermann.model.gdVerwaltung.ImageType;
 import io.kellermann.model.gdVerwaltung.WorshipMetaData;
+import io.kellermann.services.StatusService;
 import io.kellermann.services.UtilityComponent;
 import io.kellermann.services.gdManagement.WorshipServiceApi;
 import org.springframework.stereotype.Service;
@@ -15,16 +17,19 @@ import java.util.Objects;
 
 @Service
 public class VideoGenerationService {
-    private VideoConfiguration videoConfiguration;
-    private JaffreeFFmpegService jaffreeFFmpegService;
-    private WorshipServiceApi worshipServiceApi;
-    private UtilityComponent utility;
+    private final VideoConfiguration videoConfiguration;
+    private final JaffreeFFmpegService jaffreeFFmpegService;
+    private final WorshipServiceApi worshipServiceApi;
+    private final UtilityComponent utility;
 
-    public VideoGenerationService(VideoConfiguration videoConfiguration, JaffreeFFmpegService jaffreeFFmpegService, WorshipServiceApi worshipServiceApi, UtilityComponent utilityComponent) {
+    private final StatusService statusService;
+
+    public VideoGenerationService(VideoConfiguration videoConfiguration, JaffreeFFmpegService jaffreeFFmpegService, WorshipServiceApi worshipServiceApi, UtilityComponent utilityComponent, StatusService statusService) {
         this.videoConfiguration = videoConfiguration;
         this.jaffreeFFmpegService = jaffreeFFmpegService;
         this.worshipServiceApi = worshipServiceApi;
         this.utility = utilityComponent;
+        this.statusService = statusService;
     }
 
     /**
@@ -32,7 +37,7 @@ public class VideoGenerationService {
      * @return
      * @throws IOException
      */
-    public Path gemerateGDVideo(WorshipMetaData worshipMetaData) throws IOException {
+    public Path gemerateGDVideo(WorshipMetaData worshipMetaData, GdJob gdJob) throws IOException {
         setupWorkspace(videoConfiguration.getTempWorkspace());
         Path tempWorkspace = videoConfiguration.getTempWorkspace();
         Path widescreenImage;
@@ -59,14 +64,15 @@ public class VideoGenerationService {
 
         //Cut original main video
         Path originalCut = tempWorkspace.resolve("original_cut.mp4");
-        jaffreeFFmpegService.cutAudioVideo(videoConfiguration.getGdVideoStartTime(), videoConfiguration.getGdVideoEndTime(), utility.getMainRecording(worshipMetaData), originalCut, false);
+        jaffreeFFmpegService.cutAudioVideo(gdJob.startTime(), gdJob.endTime(), utility.getMainRecording(worshipMetaData), originalCut, false);
+//        jaffreeFFmpegService.cutAudioVideo(videoConfiguration.getGdVideoStartTime(), videoConfiguration.getGdVideoEndTime(), utility.getMainRecording(worshipMetaData), originalCut, false);
 
         //Render finished GD
         jaffreeFFmpegService.concatVideo(videoConfiguration.getOutput().resolve("finalGD.mp4"), 1.5, renderedIntro, originalCut, videoConfiguration.getOutroVideoName());
 
 
         //Generate podcast
-        jaffreeFFmpegService.convertToWav(videoConfiguration.getOutput().resolve("finalGD.mp4"), videoConfiguration.getWavTarget().resolve("podcast.wav"));
+//        jaffreeFFmpegService.convertToWav(videoConfiguration.getOutput().resolve("finalGD.mp4"), videoConfiguration.getWavTarget().resolve("podcast.wav"));
 
         setupWorkspace(videoConfiguration.getTempWorkspace());
 

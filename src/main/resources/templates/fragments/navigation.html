@@ -19,10 +19,10 @@
                             onchange="this.options[this.selectedIndex].value && (window.location = '/?id=' + this.options[this.selectedIndex].value);">
                         <!--/*@thymesVar id="lastWorships" type="java.util.List<io.kellermann.model.gdVerwaltung.WorshipMetaData>"*/-->
                         <th:block th:each="worship, iStat: ${lastWorships}">
-                            <th:block th:if="${worship.getVideoLink() == null}">
+                            <!--                            <th:block th:if="${worship.getVideoLink() == null}">-->
                                 <option th:value="${worship.getServiceID()}"
                                         th:text="${worship.startDate + ' ' + worship.getServiceTitle(worship.getServiceLanguage())}"></option>
-                            </th:block>
+                            <!--                            </th:block>-->
 
                         </th:block>
                     </select>

@@ -12,8 +12,7 @@
 
     <div class="row">
         <div class="container">
-            <h5 th:text="'Gottesdienst: ' + ${worshipMetadata.getServiceTitle(worshipMetadata.getServiceLanguage())}"></h5>
-            <h5 th:text="'Gottesdienst: ' + ${worshipMetadata.getVideoLink()}"></h5>
+            <h3 th:text="'Gottesdienst: ' + ${worshipMetadata.getServiceTitle(worshipMetadata.getServiceLanguage())}"></h3>
             <h5 th:text="'Serie: ' + ${worshipMetadata.getSeries().getTitleLanguage(worshipMetadata.getServiceLanguage())}"></h5>
         </div>
     </div>

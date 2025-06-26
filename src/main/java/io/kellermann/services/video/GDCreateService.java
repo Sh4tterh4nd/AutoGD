@@ -1,5 +1,6 @@
 package io.kellermann.services.video;
 
+import io.kellermann.model.gd.GdJob;
 import io.kellermann.model.gdVerwaltung.WorshipMetaData;
 import io.kellermann.services.StatusService;
 import org.springframework.scheduling.annotation.Async;
@@ -21,19 +22,19 @@ public class GDCreateService {
     }
 
     @Async
-    public void startGDCreation(WorshipMetaData worshipMetaData) {
+    public void startGDCreation(WorshipMetaData worshipMetaData, GdJob gdJob) {
         try {
-            videoGenerationService.gemerateGDVideo(worshipMetaData);
+            videoGenerationService.gemerateGDVideo(worshipMetaData, gdJob);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
 
-        try {
-            podcastGenerationService.generateGDPodcast(worshipMetaData);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            podcastGenerationService.generateGDPodcast(worshipMetaData);
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
     }
 
 }

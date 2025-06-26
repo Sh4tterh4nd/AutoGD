@@ -11,83 +11,68 @@
 <body>
 
 <th:block layout:fragment="content">
-    <div>
-        <div>
-            <input type="text" id="from" placeholder="Choose a nickname"/>
-        </div>
-        <br/>
-        <div>
-            <button id="connect" onclick="connect();">Connect</button>
-            <button id="disconnect" disabled="disabled" onclick="disconnect();">Disconnect</button>
-        </div>
-        <br/>
-        <div id="conversationDiv">
-            <input type="text" id="text" placeholder="Write a message..."/>
-            <button id="sendMessage" onclick="sendMessage();">Send</button>
-            <p id="response"></p>
+
+    <div class="card" style="width: 100%;">
+        <div class="card-body">
+            <h5 class="card-title">Gesamtfortschritt</h5>
+            <!--            <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>-->
+            <div class="progress">
+                <div id="progress-main" class="progress-bar" role="progressbar" aria-valuenow="2" aria-valuemin="0"
+                     aria-valuemax="100" style="min-width: 0em; width: 0%;">
+                    2%
+                </div>
+            </div>
         </div>
     </div>
 
 
-    <script type="text/javascript">
+    <div class="card" style="width: 100%;">
+        <div class="card-body">
+            <h5 class="card-title">Video Fortschritt</h5>
+            <!--            <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>-->
+            <div class="progress">
+                <div id="progressVideo" class="progress-bar" role="progressbar" aria-valuenow="2" aria-valuemin="0"
+                     aria-valuemax="100" style="min-width: 0em; width: 0%;">
+                    2%
+                </div>
+            </div>
+            <h5 class="card-title">Podcast Fortschritt</h5>
+            <div class="progress">
+                <div id="progressPodcast" class="progress-bar" role="progressbar" aria-valuenow="2" aria-valuemin="0"
+                     aria-valuemax="100" style="min-width: 0em; width: 0%;">
+                    2%
+                </div>
+            </div>
+        </div>
+    </div>
 
-        var stompClient = null;
+    <div class="card" style="width: 100%;">
+        <div class="card-body">
+            <h5 id="status-detail" class="card-title">Zwischenstatus</h5>
+            <div class="progress">
+                <div id="progress-detail" class="progress-bar" role="progressbar" aria-valuenow="2" aria-valuemin="0"
+                     aria-valuemax="100" style="min-width: 0em; width: 0%;">
+                    2%
+                </div>
+            </div>
+        </div>
+    </div>
 
-        function setConnected(connected) {
+    <h5>Arbeitsschritte</h5>
+    <div id="stepView" style="
+      width: 100%;
+      height: 180px;
+      background-color: #1e1e1e;
+      color: #dcdcdc;
+      font-family: monospace;
+      font-size: 14px;
+      padding: 10px;
+      border: 1px solid #333;
+      overflow-y: scroll;
+      white-space: pre-wrap;
+    "></div>
 
-            document.getElementById('connect').disabled = connected;
-            document.getElementById('disconnect').disabled = !connected;
-            document.getElementById('conversationDiv').style.visibility = connected ? 'visible' : 'hidden';
-            document.getElementById('response').innerHTML = '';
-        }
-
-        function connect() {
-
-            var socket = new SockJS('/chat');
-            stompClient = Stomp.over(socket);
-
-            stompClient.connect({}, function (frame) {
-
-                setConnected(true);
-                console.log('Connected: ' + frame);
-                stompClient.subscribe('/topic/message', function (messageOutput) {
-                    let msg = JSON.parse(messageOutput.body);
-                    appendLog(msg.time + ': ' + msg.text);
-                });
-
-            });
-        }
-
-        // function disconnect() {
-        //
-        //     if (stompClient != null) {
-        //         stompClient.disconnect();
-        //     }
-        //
-        //     setConnected(false);
-        //     console.log("Disconnected");
-        // }
-
-        function sendMessage() {
-
-            var from = document.getElementById('from').value;
-            var text = document.getElementById('text').value;
-            stompClient.send("/app/chat", {}, JSON.stringify({'from': from, 'text': text}));
-        }
-
-        function showMessageOutput(messageOutput) {
-
-            var response = document.getElementById('response');
-            var p = document.createElement('p');
-            p.style.wordWrap = 'break-word';
-            p.appendChild(document.createTextNode(messageOutput.from + ": " + messageOutput.text + " (" + messageOutput.time + ")"));
-            response.appendChild(p);
-        }
-
-        onload(connect());
-
-    </script>
-
+    <h5>Log Details</h5>
     <div id="logView" style="
       width: 100%;
       height: 500px;
@@ -101,9 +86,81 @@
       white-space: pre-wrap;
     "></div>
 
-    <script>
-        // Example of adding log lines dynamically
+    <script type="text/javascript">
+        const progressbarDetail = document.getElementById('progress-detail');
+        const statusDetail = document.getElementById('status-detail');
+
+        const progressbarMain = document.getElementById('progress-main');
         const logView = document.getElementById('logView');
+
+        var stompClient = null;
+
+        function connect() {
+            var socket = new SockJS('/chat');
+            stompClient = Stomp.over(socket);
+
+            stompClient.connect({}, function (frame) {
+                console.log('Connected: ' + frame);
+                stompClient.subscribe('/topic/logs', function (messageOutput) {
+                    let msg = JSON.parse(messageOutput.body);
+                    appendLog(msg.time + ': ' + msg.text);
+                });
+
+                stompClient.subscribe('/topic/detailstatus', function (messageOutput) {
+                    updateCurrentStepDetails(JSON.parse(messageOutput.body))
+                });
+
+                stompClient.subscribe('/topic/mainstatus', function (messageOutput) {
+                    let msg = JSON.parse(messageOutput.body);
+                    updateProgressBar(progressbarMain, msg.progress)
+                });
+
+            });
+        }
+
+        function disconnect() {
+
+            if (stompClient != null) {
+                stompClient.disconnect();
+            }
+            console.log("Disconnected");
+        }
+
+        function updateCurrentStepDetails(status) {
+            updateProgressBar(progressbarDetail, status.progress);
+            statusDetail.textContent = status.message;
+        }
+
+
+        function updateProgressBar(progressBar, value) {
+            // Clamp value between 0 and 100
+            value = Math.max(0, Math.min(100, value));
+
+            progressBar.style.width = value + '%';
+            progressBar.setAttribute('aria-valuenow', value);
+            progressBar.textContent = value + '%';
+        }
+
+        function sendMessage() {
+
+            var from = document.getElementById('from').value;
+            var text = document.getElementById('text').value;
+            stompClient.send("/app/chat", {}, JSON.stringify({'from': from, 'text': text}));
+        }
+
+        // function showMessageOutput(messageOutput) {
+        //
+        //     var response = document.getElementById('response');
+        //     var p = document.createElement('p');
+        //     p.style.wordWrap = 'break-word';
+        //     p.appendChild(document.createTextNode(messageOutput.from + ": " + messageOutput.text + " (" + messageOutput.time + ")"));
+        //     response.appendChild(p);
+        // }
+
+        function appendStepView(message) {
+            logView.textContent += message + '\n';
+            logView.scrollTop = logView.scrollHeight; // Auto-scroll to bottom
+        }
 
         function appendLog(message) {
             logView.textContent += message + '\n';
@@ -113,6 +170,14 @@
         // Example usage
         appendLog('Log initialized...');
         appendLog('New message logged.');
+
+
+        window.onload = function () {
+            disconnect();
+            connect();
+            // updateProgressBar(progressbarDetail, 45);
+        }
+
     </script>
 
 
