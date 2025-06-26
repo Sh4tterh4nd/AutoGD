@@ -1,26 +1,27 @@
 package io.kellermann.model.gd;
 
 public class StepStatus {
-    private String progress;
+
     private String title;
     private String message;
     private String type;
+    private Integer progress;
 
-    public StepStatus(String progress, String title, String message, String type) {
-        this.progress = progress;
+    public StepStatus(String title, String message, String type, Integer progress) {
         this.title = title;
         this.message = message;
         this.type = type;
+        this.progress = progress;
     }
 
     public StepStatus() {
     }
 
-    public String getProgress() {
+    public Integer getProgress() {
         return progress;
     }
 
-    public void setProgress(String progress) {
+    public void setProgress(Integer progress) {
         this.progress = progress;
     }
 

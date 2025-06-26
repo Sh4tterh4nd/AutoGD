@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -26,10 +28,12 @@ public class WorshipServiceApi {
     private WebClient webClient;
     private GDManagementConfig config;
     List<WorshipMetaData> cachedMetaData = new ArrayList<>();
+    private LocalTime lastUpdate = LocalTime.now();
 
     public WorshipServiceApi(WebClient theWebClient, GDManagementConfig theConfig) {
         webClient = theWebClient;
         config = theConfig;
+
     }
 
     /**
@@ -38,7 +42,7 @@ public class WorshipServiceApi {
      * @return
      */
     public List<WorshipMetaData> getAvailableWorships() {
-        if (cachedMetaData.isEmpty()) {
+        if (cachedMetaData.isEmpty() && lastUpdate.until(LocalTime.now(), ChronoUnit.MINUTES) > 30) {
             cachedMetaData = Arrays.asList(webClient
                     .get()
                     .uri("/interfaces/services/list")

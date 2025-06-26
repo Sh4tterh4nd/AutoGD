@@ -51,12 +51,12 @@ public class VideoGenerationService {
         Path imageIntro = tempWorkspace.resolve("image_intro.mp4");
         Path renderedIntro = tempWorkspace.resolve("rendered_intro.mp4");
 
-
         worshipServiceApi.saveGDImageTo(ImageType.WIDESCREEN, worshipMetaData, widescreenImage);
 
 
         //Convert title image to video
         jaffreeFFmpegService.imageToVideo(widescreenImage, imageIntro, 3);
+
 
         //Merge intro parts to introVideo
         jaffreeFFmpegService.concatVideoAndMergeAudio(renderedIntro, videoConfiguration.getIntroSoundName(), imageIntro, videoConfiguration.getIntroVideoName());
@@ -69,7 +69,6 @@ public class VideoGenerationService {
 
         //Render finished GD
         jaffreeFFmpegService.concatVideo(videoConfiguration.getOutput().resolve("finalGD.mp4"), 1.5, renderedIntro, originalCut, videoConfiguration.getOutroVideoName());
-
 
         //Generate podcast
 //        jaffreeFFmpegService.convertToWav(videoConfiguration.getOutput().resolve("finalGD.mp4"), videoConfiguration.getWavTarget().resolve("podcast.wav"));

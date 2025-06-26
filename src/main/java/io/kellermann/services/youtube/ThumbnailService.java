@@ -1,10 +1,12 @@
 package io.kellermann.services.youtube;
 
 import io.kellermann.config.VideoConfiguration;
+import io.kellermann.model.gd.GdJob;
+import io.kellermann.model.gd.StatusKeys;
 import io.kellermann.model.gdVerwaltung.WorshipMetaData;
+import io.kellermann.services.StatusService;
 import io.kellermann.services.UtilityComponent;
 import io.kellermann.services.video.JaffreeFFmpegService;
-import io.kellermann.services.video.VideoGenerationService;
 import jakarta.annotation.PostConstruct;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
@@ -45,19 +47,19 @@ public class ThumbnailService {
 
     private final VideoConfiguration videoConfiguration;
     private final UtilityComponent utilityComponent;
-    private JaffreeFFmpegService jaffreeFFmpegService;
-    private VideoGenerationService videoGenerationService;
+    private final JaffreeFFmpegService jaffreeFFmpegService;
+    private final StatusService statusService;
     private CascadeClassifier faceClassifier;
     private CascadeClassifier eyeClassifier;
 
-    public ThumbnailService(VideoConfiguration videoConfiguration, JaffreeFFmpegService jaffreeFFmpegService, VideoGenerationService videoGenerationService, UtilityComponent utilityComponent) {
+    public ThumbnailService(VideoConfiguration videoConfiguration, JaffreeFFmpegService jaffreeFFmpegService, StatusService statusService, UtilityComponent utilityComponent) {
         this.videoConfiguration = videoConfiguration;
         this.jaffreeFFmpegService = jaffreeFFmpegService;
-        this.videoGenerationService = videoGenerationService;
+        this.statusService = statusService;
         this.utilityComponent = utilityComponent;
     }
 
-    public void generateThumbnails(WorshipMetaData worshipMetaData) throws IOException {
+    public void generateThumbnails(WorshipMetaData worshipMetaData, GdJob gdJob) throws IOException {
         Path tempWorkspace = videoConfiguration.getTempWorkspace().resolve("thumbnails");
         Path allImages = tempWorkspace.resolve("all");
         Path headSearch = tempWorkspace.resolve("head");
@@ -71,24 +73,22 @@ public class ThumbnailService {
         }
 //        Turn video to images
         jaffreeFFmpegService.generateImageFromVideo(
-                videoConfiguration.getGdVideoStartTime(),
-                videoConfiguration.getGdVideoEndTime(),
+                gdJob.startTime(),
+                gdJob.endTime(),
                 utilityComponent.getMainRecording(worshipMetaData),
                 allImages,
                 2);
 
-        List<Path> collect = Files.walk(allImages).filter(Files::isRegularFile).toList();
+        List<Path> imageFiles = Files.walk(allImages).filter(Files::isRegularFile).toList();
 
-        List<Path> candidates = new ArrayList<>();
-
-        for (Path path : collect) {
-            Candidate candidate = detectFace(path);
+        for (int i = 0; i < imageFiles.size(); i++) {
+            Candidate candidate = detectFace(imageFiles.get(i));
             if (candidate.isCandidate) {
-                drawThumbnail(path, candidate.centerPoint, worshipMetaData);
+                drawThumbnail(imageFiles.get(i), candidate.centerPoint, worshipMetaData);
+                statusService.sendLogUpdate("Generating Thumbnail for: " + imageFiles.get(i).getFileName().toString());
             }
-
+            statusService.sendFullDetail(StatusKeys.VIDEO_THUMBNAIL_CREATE, ((double) i / imageFiles.size()), "");
         }
-
     }
 
 
@@ -160,13 +160,13 @@ public class ThumbnailService {
                             3                                                     // RGB colour
                     );
                 }
-                Imgcodecs.imwrite(source.getParent().getParent().resolve("head").resolve(source.getFileName()).toAbsolutePath().toString(), submat);
+//                Imgcodecs.imwrite(source.getParent().getParent().resolve("head").resolve(source.getFileName()).toAbsolutePath().toString(), submat);
 
-//                if (eyeDetections.toArray().length > 0) {
+                if (eyeDetections.toArray().length > 0) {
                     candidate.setCenterPoint(centerOfRect);
-                    Imgcodecs.imwrite(source.getParent().getParent().resolve("eye").resolve(source.getFileName()).toAbsolutePath().toString(), imageMat);
+//                    Imgcodecs.imwrite(source.getParent().getParent().resolve("eye").resolve(source.getFileName()).toAbsolutePath().toString(), imageMat);
                     return candidate;
-//                }
+                }
             }
         }
         return candidate;

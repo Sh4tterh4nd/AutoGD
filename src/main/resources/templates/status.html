@@ -17,7 +17,7 @@
             <h5 class="card-title">Gesamtfortschritt</h5>
             <!--            <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>-->
             <div class="progress">
-                <div id="progress-main" class="progress-bar" role="progressbar" aria-valuenow="2" aria-valuemin="0"
+                <div id="progressMain" class="progress-bar" role="progressbar" aria-valuenow="2" aria-valuemin="0"
                      aria-valuemax="100" style="min-width: 0em; width: 0%;">
                     2%
                 </div>
@@ -29,7 +29,7 @@
     <div class="card" style="width: 100%;">
         <div class="card-body">
             <h5 class="card-title">Video Fortschritt</h5>
-            <!--            <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>-->
+            <h6 id="video-subtitle" class="card-subtitle mb-2 text-muted">Card subtitle</h6>
             <div class="progress">
                 <div id="progressVideo" class="progress-bar" role="progressbar" aria-valuenow="2" aria-valuemin="0"
                      aria-valuemax="100" style="min-width: 0em; width: 0%;">
@@ -50,7 +50,7 @@
         <div class="card-body">
             <h5 id="status-detail" class="card-title">Zwischenstatus</h5>
             <div class="progress">
-                <div id="progress-detail" class="progress-bar" role="progressbar" aria-valuenow="2" aria-valuemin="0"
+                <div id="progressDetail" class="progress-bar" role="progressbar" aria-valuenow="2" aria-valuemin="0"
                      aria-valuemax="100" style="min-width: 0em; width: 0%;">
                     2%
                 </div>
@@ -61,7 +61,7 @@
     <h5>Arbeitsschritte</h5>
     <div id="stepView" style="
       width: 100%;
-      height: 180px;
+      height: 120px;
       background-color: #1e1e1e;
       color: #dcdcdc;
       font-family: monospace;
@@ -87,12 +87,17 @@
     "></div>
 
     <script type="text/javascript">
-        const progressbarDetail = document.getElementById('progress-detail');
+        //progress bars
+        const progressbarDetail = document.getElementById('progressDetail');
+        const progressbarVideo = document.getElementById('progressVideo');
+        const progressbarPodcast = document.getElementById('progressPodcast');
+        const progressbarMain = document.getElementById('progressMain');
+
         const statusDetail = document.getElementById('status-detail');
+        const videoSubtitle = document.getElementById('video-subtitle');
 
-        const progressbarMain = document.getElementById('progress-main');
+
         const logView = document.getElementById('logView');
-
         var stompClient = null;
 
         function connect() {
@@ -106,16 +111,32 @@
                     appendLog(msg.time + ': ' + msg.text);
                 });
 
-                stompClient.subscribe('/topic/detailstatus', function (messageOutput) {
-                    updateCurrentStepDetails(JSON.parse(messageOutput.body))
+                stompClient.subscribe('/topic/progressDetails', function (messageOutput) {
+                    printProgresses(JSON.parse(messageOutput.body))
                 });
 
-                stompClient.subscribe('/topic/mainstatus', function (messageOutput) {
-                    let msg = JSON.parse(messageOutput.body);
-                    updateProgressBar(progressbarMain, msg.progress)
-                });
+                // stompClient.subscribe('/topic/detailstatus', function (messageOutput) {
+                //     updateCurrentStepDetails(JSON.parse(messageOutput.body))
+                // });
+
+                // stompClient.subscribe('/topic/stepstatus', function (messageOutput) {
+                //     updateSteps(JSON.parse(messageOutput.body))
+                // });
 
             });
+        }
+
+        function printProgresses(fullStatus) {
+            updateProgressBar(progressbarDetail, fullStatus.detailPercentage);
+            if (fullStatus.targetType === 'VIDEO') {
+                updateProgressBar(progressbarVideo, fullStatus.stepPercentage);
+                videoSubtitle.textContent = fullStatus.stepTitle;
+            } else {
+                updateProgressBar(progressbarPodcast, fullStatus.stepPercentage);
+            }
+            updateProgressBar(progressbarMain, fullStatus.fullPercentage);
+            statusDetail.textContent = fullStatus.stepTitle;
+
         }
 
         function disconnect() {
@@ -157,9 +178,18 @@
         //     response.appendChild(p);
         // }
 
+        function updateSteps(step) {
+            if (step.type === 'video') {
+                updateProgressBar(progressbarVideo, step.progress);
+                appendStepView(step.message);
+                videoSubtitle.textContent = step.title;
+            }
+
+        }
+
         function appendStepView(message) {
-            logView.textContent += message + '\n';
-            logView.scrollTop = logView.scrollHeight; // Auto-scroll to bottom
+            stepView.textContent += message + '\n';
+            stepView.scrollTop = logView.scrollHeight; // Auto-scroll to bottom
         }
 
         function appendLog(message) {

@@ -8,6 +8,7 @@ import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import io.kellermann.config.VideoConfiguration;
+import io.kellermann.model.gd.StatusKeys;
 import io.kellermann.model.gdVerwaltung.WorshipMetaData;
 import io.kellermann.services.StatusService;
 import org.springframework.stereotype.Service;
@@ -56,7 +57,7 @@ public class JaffreeFFmpegService {
                 .setOutputListener(new OutputListener() {
                     @Override
                     public void onOutput(String s) {
-                        System.out.println(s);
+                        statusService.sendLogUpdate(s);
                     }
                 })
                 .execute();
@@ -84,12 +85,13 @@ public class JaffreeFFmpegService {
                         statusService.sendLogUpdate(s);
                         LocalTime currentTime = getLocalTimeFromLog(s);
                         if (currentTime != LocalTime.MIN) {
-                            int progress = (int) (((double) currentTime.toNanoOfDay() / finalLoc.toNanoOfDay()) * 100);
-                            statusService.sendDetailStatus("Intro Generierung", progress);
+                            double progress = ((double) currentTime.toNanoOfDay() / finalLoc.toNanoOfDay());
+                            statusService.sendFullDetail(StatusKeys.VIDEO_INTRO, progress, "");
                         }
                     }
                 })
                 .execute();
+        statusService.sendFullDetail(StatusKeys.VIDEO_INTRO, 1.0, "Finished Intro Generation");
     }
 
     public void concatVideoAndMergeAudio(Path output, Path audio, Path... videos) {
@@ -131,11 +133,13 @@ public class JaffreeFFmpegService {
                     statusService.sendLogUpdate(s);
                     LocalTime currentTime = getLocalTimeFromLog(s);
                     if (currentTime != LocalTime.MIN) {
-                        int progress = (int) (((double) currentTime.toNanoOfDay() / finalLoc.toNanoOfDay()) * 100);
+                        double progress = ((double) currentTime.toNanoOfDay() / finalLoc.toNanoOfDay());
                         if (onlyAudio) {
-                            statusService.sendDetailStatus("Podcast Schnitt", progress);
+//                            statusService.sendDetailStatus("Podcast Schnitt", progress);
+                            statusService.sendFullDetail(StatusKeys.VIDEO_CUT, progress, "");
                         } else {
-                            statusService.sendDetailStatus("Video Schnitt", progress);
+//                            statusService.sendDetailStatus("Video Schnitt", progress);
+
                         }
                     }
                 })
@@ -194,8 +198,9 @@ public class JaffreeFFmpegService {
                 statusService.sendLogUpdate(s);
                 LocalTime currentTime = getLocalTimeFromLog(s);
                 if (currentTime != LocalTime.MIN) {
-                    int progress = (int) (((double) currentTime.toNanoOfDay() / finalLoc.toNanoOfDay()) * 100);
-                    statusService.sendDetailStatus("Video und Audio Zusammensetzen", progress);
+                    double progress = ((double) currentTime.toNanoOfDay() / finalLoc.toNanoOfDay());
+//                    statusService.sendDetailStatus("Video und Audio Zusammensetzen", progress);
+                    statusService.sendFullDetail(StatusKeys.VIDEO_GENERATION, progress, "");
                 }
             }
         });
@@ -366,6 +371,7 @@ public class JaffreeFFmpegService {
 
 
     public void generateImageFromVideo(LocalTime start, LocalTime end, Path video, Path outDir, double frameRate) {
+        LocalTime finalLoc = end.minusNanos(start.toNanoOfDay());
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss.SS");
         FFmpeg
                 .atPath()
@@ -377,10 +383,12 @@ public class JaffreeFFmpegService {
                         .addArguments("-qscale:v", "4")
 //                        .addArgument("-copyts")
                         .addArguments("-vf", "fps=" + frameRate))
-                .setOutputListener(new OutputListener() {
-                    @Override
-                    public void onOutput(String s) {
-                        System.out.println(s);
+                .setOutputListener(s -> {
+                    statusService.sendLogUpdate(s);
+                    LocalTime currentTime = getLocalTimeFromLog(s);
+                    if (currentTime != LocalTime.MIN) {
+                        double progress = ((double) currentTime.toNanoOfDay() / finalLoc.toNanoOfDay());
+                        statusService.sendFullDetail(StatusKeys.VIDEO_THUMBNAIL_PREPARE, progress, "");
                     }
                 })
                 .execute();
