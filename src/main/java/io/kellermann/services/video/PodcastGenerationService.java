@@ -85,7 +85,6 @@ public class PodcastGenerationService {
                 albumartImage,
                 podcastFilePath,
                 worshipMetaData);
-        System.err.println("Mp3 Podcast Generated");
         return podcastFilePath;
     }
 

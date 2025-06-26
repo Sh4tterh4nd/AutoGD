@@ -1,5 +1,6 @@
 package io.kellermann.controller.web;
 
+import io.kellermann.services.StatusService;
 import io.kellermann.services.gdManagement.WorshipServiceApi;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,18 +15,24 @@ import java.util.Objects;
 @RequestMapping("/")
 public class MainWebController {
     private final WorshipServiceApi worshipServiceApi;
+    private final StatusService statusService;
 
-    public MainWebController(WorshipServiceApi worshipServiceApi) {
+    public MainWebController(WorshipServiceApi worshipServiceApi, StatusService statusService) {
         this.worshipServiceApi = worshipServiceApi;
+        this.statusService = statusService;
     }
 
     @GetMapping()
     public String index(@RequestParam(required = false) Integer id, Model model) {
-        if (Objects.isNull(id)) {
-            return "redirect:/?id=" + worshipServiceApi.getAllWorshipsPreviousToDate(LocalDate.now()).getFirst().getServiceID();
+        if (statusService.isFinished()) {
+            if (Objects.isNull(id)) {
+                return "redirect:/?id=" + worshipServiceApi.getAllWorshipsPreviousToDate(LocalDate.now()).getFirst().getServiceID();
+            }
+            model.addAttribute("worshipMetadata", worshipServiceApi.getWorshipByServiceId(id));
+            return "index";
+        } else {
+            return "redirect:/status";
         }
-        model.addAttribute("worshipMetadata", worshipServiceApi.getWorshipByServiceId(id));
-        return "index";
     }
 
 }

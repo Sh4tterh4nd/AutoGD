@@ -42,7 +42,7 @@ public class WorshipServiceApi {
      * @return
      */
     public List<WorshipMetaData> getAvailableWorships() {
-        if (cachedMetaData.isEmpty() && lastUpdate.until(LocalTime.now(), ChronoUnit.MINUTES) > 30) {
+        if (cachedMetaData.isEmpty() || lastUpdate.until(LocalTime.now(), ChronoUnit.MINUTES) > 30) {
             cachedMetaData = Arrays.asList(webClient
                     .get()
                     .uri("/interfaces/services/list")

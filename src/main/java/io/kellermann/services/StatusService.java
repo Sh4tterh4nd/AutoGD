@@ -2,9 +2,7 @@ package io.kellermann.services;
 
 import io.kellermann.model.gd.FullStatus;
 import io.kellermann.model.gd.Message;
-import io.kellermann.model.gd.Status;
 import io.kellermann.model.gd.StatusKeys;
-import io.kellermann.model.gd.StepStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +12,7 @@ import java.util.Date;
 @Service
 public class StatusService {
     private final SimpMessagingTemplate simpMessagingTemplate;
+    private boolean finished = true;
 
 
     public StatusService(SimpMessagingTemplate simpMessagingTemplate) {
@@ -38,20 +37,11 @@ public class StatusService {
                 fullStatus);
     }
 
-
-    public void sendDetailStatus(String message, int progress) {
-        simpMessagingTemplate.convertAndSend("/topic/detailstatus",
-                new Status(message, progress));
+    public boolean isFinished() {
+        return finished;
     }
 
-
-    public void sentStepsStatus(String title, String message, String type, Integer progress) {
-        simpMessagingTemplate.convertAndSend("/topic/stepstatus",
-                new StepStatus(title, message, type, progress));
-    }
-
-    public void sendMainStatus() {
-        simpMessagingTemplate.convertAndSend("/topic/mainstatus",
-                new Status("Test", 1));
+    public void setFinished(boolean finished) {
+        this.finished = finished;
     }
 }

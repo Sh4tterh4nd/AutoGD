@@ -38,6 +38,7 @@ public class GDCreateService {
 
     @Async
     public void startGDCreation(WorshipMetaData worshipMetaData, GdJob gdJob) {
+        statusService.setFinished(false);
         try {
             Path gdVideo = videoGenerationService.gemerateGDVideo(worshipMetaData, gdJob);
             thumbnailService.generateThumbnails(worshipMetaData, gdJob);
@@ -45,21 +46,25 @@ public class GDCreateService {
             statusService.sendFullDetail(StatusKeys.VIDEO_REGISTER, 0., "");
             //Todo uncomment
             if (!activeProfile.contains("dev")) {
-                worshipServiceApi.submitYoutubeUrlToGDManagement(youtubeUrl, worshipMetaData);
+//                worshipServiceApi.submitYoutubeUrlToGDManagement(youtubeUrl, worshipMetaData);
             }
             statusService.sendFullDetail(StatusKeys.VIDEO_REGISTER, 1., "");
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } finally {
+            statusService.setFinished(true);
         }
 
 
         try {
             Path podcastPath = podcastGenerationService.generateGDPodcast(worshipMetaData, gdJob);
             if (!activeProfile.contains("dev")) {
-                podcastGenerationService.uploadPodcastAndRegister(podcastPath, worshipMetaData.getServiceID());
+//                podcastGenerationService.uploadPodcastAndRegister(podcastPath, worshipMetaData.getServiceID());
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } finally {
+            statusService.setFinished(true);
         }
 
     }
