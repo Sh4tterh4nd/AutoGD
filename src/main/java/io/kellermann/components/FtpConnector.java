@@ -1,14 +1,18 @@
 package io.kellermann.components;
 
 import io.kellermann.config.PodcastConfiguration;
+import io.kellermann.model.gd.StatusKeys;
+import io.kellermann.services.StatusService;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
+import org.apache.commons.net.io.CopyStreamAdapter;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Optional;
@@ -18,21 +22,36 @@ public class FtpConnector {
 
     private FTPClient ftp;
 
-    private PodcastConfiguration podcastConfiguration;
+    private final PodcastConfiguration podcastConfiguration;
+    private final StatusService statusService;
 
-    public FtpConnector(PodcastConfiguration podcastConfiguration) {
+    public FtpConnector(PodcastConfiguration podcastConfiguration, StatusService statusService) {
         this.podcastConfiguration = podcastConfiguration;
+        this.statusService = statusService;
     }
 
+    public void uploadFTPFileToConfiguredPath(Path toUpload) throws IOException {
+        long fileSiez = Files.size(toUpload);
+        CopyStreamAdapter streamListener = new CopyStreamAdapter() {
 
-    public void uploadFTPFileToConfiguredPath(Path toUpload) {
+            @Override
+            public void bytesTransferred(long totalBytesTransferred, int bytesTransferred, long streamSize) {
+                double progress = ((double) totalBytesTransferred / fileSiez);
+                statusService.sendFullDetail(StatusKeys.PODCAST_UPLOAD, progress, "");
+            }
+        };
+
+
         FTPClient ftpClient = null;
         try {
             ftpClient = getFtpClient();
+            ftpClient.setCopyStreamListener(streamListener);
             ftpClient.storeFile(podcastConfiguration.getPath() + toUpload.getFileName(), new FileInputStream(toUpload.toFile()));
 
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } finally {
+            ftp = null;
         }
     }
 

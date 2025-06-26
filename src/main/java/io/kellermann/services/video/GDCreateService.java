@@ -7,6 +7,7 @@ import io.kellermann.services.StatusService;
 import io.kellermann.services.gdManagement.WorshipServiceApi;
 import io.kellermann.services.youtube.ThumbnailService;
 import io.kellermann.services.youtube.YoutubeUploader;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,10 @@ public class GDCreateService {
     private final StatusService statusService;
     private final YoutubeUploader youtubeUploader;
     private final WorshipServiceApi worshipServiceApi;
+
+    @Value("${spring.profiles.active:none}")
+    private String activeProfile;
+
 
     public GDCreateService(PodcastGenerationService podcastGenerationService, VideoGenerationService videoGenerationService, ThumbnailService thumbnailService, StatusService statusService, YoutubeUploader youtubeUploader, WorshipServiceApi worshipServiceApi) {
         this.podcastGenerationService = podcastGenerationService;
@@ -39,18 +44,24 @@ public class GDCreateService {
             String youtubeUrl = youtubeUploader.uploadToYoutube(gdVideo, worshipMetaData);
             statusService.sendFullDetail(StatusKeys.VIDEO_REGISTER, 0., "");
             //Todo uncomment
-//            worshipServiceApi.submitYoutubeUrlToGDManagement(youtubeUrl, worshipMetaData);
+            if (!activeProfile.contains("dev")) {
+                worshipServiceApi.submitYoutubeUrlToGDManagement(youtubeUrl, worshipMetaData);
+            }
             statusService.sendFullDetail(StatusKeys.VIDEO_REGISTER, 1., "");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
 
-//        try {
-//            podcastGenerationService.generateGDPodcast(worshipMetaData);
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
+        try {
+            Path podcastPath = podcastGenerationService.generateGDPodcast(worshipMetaData, gdJob);
+            if (!activeProfile.contains("dev")) {
+                podcastGenerationService.uploadPodcastAndRegister(podcastPath, worshipMetaData.getServiceID());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
 }

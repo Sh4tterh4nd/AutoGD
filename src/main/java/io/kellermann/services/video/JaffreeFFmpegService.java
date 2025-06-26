@@ -135,11 +135,9 @@ public class JaffreeFFmpegService {
                     if (currentTime != LocalTime.MIN) {
                         double progress = ((double) currentTime.toNanoOfDay() / finalLoc.toNanoOfDay());
                         if (onlyAudio) {
-//                            statusService.sendDetailStatus("Podcast Schnitt", progress);
                             statusService.sendFullDetail(StatusKeys.VIDEO_CUT, progress, "");
                         } else {
-//                            statusService.sendDetailStatus("Video Schnitt", progress);
-
+                            statusService.sendFullDetail(StatusKeys.PODCAST_CUT, progress, "");
                         }
                     }
                 })
@@ -216,6 +214,11 @@ public class JaffreeFFmpegService {
      * @param crossFadeDuration the fade duration in seconds
      */
     public void concatAudio(Path output, List<Path> audioSegments, double crossFadeDuration) {
+        LocalTime loc = LocalTime.MIN;
+        for (Path video : audioSegments) {
+            loc = loc.plusNanos(getDurationLocalTime(video).toNanoOfDay());
+        }
+        LocalTime finalLoc = loc;
         FFmpeg fFmpeg = FFmpeg
                 .atPath()
                 .setOverwriteOutput(true);
@@ -232,10 +235,16 @@ public class JaffreeFFmpegService {
                         .addArguments("-preset", "fast")
         );
 
+
         fFmpeg.setOutputListener(new OutputListener() {
             @Override
             public void onOutput(String s) {
-                System.out.println(s);
+                statusService.sendLogUpdate(s);
+                LocalTime currentTime = getLocalTimeFromLog(s);
+                if (currentTime != LocalTime.MIN) {
+                    double progress = ((double) currentTime.toNanoOfDay() / finalLoc.toNanoOfDay());
+                    statusService.sendFullDetail(StatusKeys.PODCAST_MERGE, progress, "");
+                }
             }
         });
         fFmpeg.execute();
@@ -395,6 +404,7 @@ public class JaffreeFFmpegService {
     }
 
     public void convertToPodcastMp3WithMetadata(Path input, Path albumart, Path output, WorshipMetaData worshipMetaData) throws IOException {
+        LocalTime podcast = getDurationLocalTime(input);
         Files.deleteIfExists(output);
         FFmpeg
                 .atPath()
@@ -421,7 +431,12 @@ public class JaffreeFFmpegService {
                 .setOutputListener(new OutputListener() {
                     @Override
                     public void onOutput(String s) {
-                        System.out.println(s);
+                        statusService.sendLogUpdate(s);
+                        LocalTime currentTime = getLocalTimeFromLog(s);
+                        if (currentTime != LocalTime.MIN) {
+                            double progress = ((double) currentTime.toNanoOfDay() / podcast.toNanoOfDay());
+                            statusService.sendFullDetail(StatusKeys.PODCAST_TO_MP3, progress, "");
+                        }
                     }
                 })
                 .execute();

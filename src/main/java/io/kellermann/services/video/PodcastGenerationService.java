@@ -3,11 +3,13 @@ package io.kellermann.services.video;
 
 import io.kellermann.components.FtpConnector;
 import io.kellermann.config.VideoConfiguration;
+import io.kellermann.model.gd.GdJob;
+import io.kellermann.model.gd.StatusKeys;
 import io.kellermann.model.gdVerwaltung.ImageType;
 import io.kellermann.model.gdVerwaltung.WorshipMetaData;
+import io.kellermann.services.StatusService;
 import io.kellermann.services.UtilityComponent;
 import io.kellermann.services.gdManagement.WorshipServiceApi;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -29,17 +31,15 @@ public class PodcastGenerationService {
     private final WorshipServiceApi worshipServiceApi;
     private final JaffreeFFmpegService jaffreeFFmpegService;
     private final UtilityComponent utility;
+    private final StatusService statusService;
 
-    @Value("${spring.profiles.active:none}")
-    private String activeProfile;
-
-
-    public PodcastGenerationService(FtpConnector ftpConnector, VideoConfiguration videoConfiguration, WorshipServiceApi worshipServiceApi, JaffreeFFmpegService jaffreeFFmpegService, UtilityComponent utility) {
+    public PodcastGenerationService(FtpConnector ftpConnector, VideoConfiguration videoConfiguration, WorshipServiceApi worshipServiceApi, JaffreeFFmpegService jaffreeFFmpegService, UtilityComponent utility, StatusService statusService) {
         this.ftpConnector = ftpConnector;
         this.videoConfiguration = videoConfiguration;
         this.worshipServiceApi = worshipServiceApi;
         this.jaffreeFFmpegService = jaffreeFFmpegService;
         this.utility = utility;
+        this.statusService = statusService;
     }
 
     /**
@@ -49,7 +49,7 @@ public class PodcastGenerationService {
      * @return
      * @throws IOException
      */
-    public Path generateGDPodcast(WorshipMetaData worshipMetaData) throws IOException {
+    public Path generateGDPodcast(WorshipMetaData worshipMetaData, GdJob gdJob) throws IOException {
         Path tempWorkspace = videoConfiguration.getTempWorkspace();
         Path albumartImage;
         if (Objects.isNull(worshipMetaData.getService_albumart()) || worshipMetaData.getService_albumart().isBlank()) {
@@ -57,12 +57,14 @@ public class PodcastGenerationService {
         } else {
             albumartImage = tempWorkspace.resolve("albumart_" + worshipMetaData.getService_albumart());
         }
-
+        statusService.sendFullDetail(StatusKeys.PODCAST_ALBUMART, 0., "");
         worshipServiceApi.saveGDImageTo(ImageType.ALBUMART, worshipMetaData, albumartImage);
+        statusService.sendLogUpdate("Downloaded albumart");
+        statusService.sendFullDetail(StatusKeys.PODCAST_ALBUMART, 1., "");
 
 
         Path originalCut = tempWorkspace.resolve("original_cut.wav");
-        jaffreeFFmpegService.cutAudioVideo(videoConfiguration.getGdVideoStartTime(), videoConfiguration.getGdVideoEndTime(), utility.getMainRecording(worshipMetaData), originalCut, true);
+        jaffreeFFmpegService.cutAudioVideo(gdJob.startTime(), gdJob.endTime(), utility.getMainRecording(worshipMetaData), originalCut, true);
         System.err.println("Podcast was Cut");
         List<Path> audioSegmentsList = new ArrayList<>();
 
@@ -84,11 +86,6 @@ public class PodcastGenerationService {
                 podcastFilePath,
                 worshipMetaData);
         System.err.println("Mp3 Podcast Generated");
-
-        if (!activeProfile.contains("dev")) {
-            uploadPodcastAndRegister(podcastFilePath, worshipMetaData.getServiceID());
-        }
-        System.err.println("Podcast successfully uploaded");
         return podcastFilePath;
     }
 
@@ -104,11 +101,12 @@ public class PodcastGenerationService {
         if (!ftpConnector.fileExistsOnFtp(podcastFilePath)) {
             ftpConnector.uploadFTPFileToConfiguredPath(podcastFilePath);
         }
-
+        statusService.sendFullDetail(StatusKeys.PODCAST_REGISTER, 0.0, "");
         worshipServiceApi.registerPodcastMp3ToPodcastRegistry(serviceID,
                 podcastFilePath.getFileName().toString(),
                 Files.size(podcastFilePath),
                 jaffreeFFmpegService.getDurationLocalTime(podcastFilePath).toSecondOfDay());
+        statusService.sendFullDetail(StatusKeys.PODCAST_REGISTER, 1.0, "");
     }
 
 
