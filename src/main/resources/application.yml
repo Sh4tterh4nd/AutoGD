@@ -54,15 +54,14 @@ autogd:
     for-kids: false
     privacy-status: public
   gdverwaltung:
-    token: "6yZcTOhgWPKDmAc1t5PbtubV59Vkz8LSgI3r09zk"
+    token: ""
     select:
       location: "Silbern"
-      date: "02.03.2025"
-      time: "11:00"
+
 
   podcast:
     domain: download.meine.church
     port: 21
     path: /web/media/silbern/mp3/
     username: ftpuploader
-    password: C6yt@Sby%tt_ZHRt
+    password:

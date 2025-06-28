@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.util.TokenBuffer;
 import io.kellermann.model.gdVerwaltung.Language;
 import io.kellermann.model.gdVerwaltung.PersonMetaData;
 import io.kellermann.model.gdVerwaltung.SeriesMetaData;
+import io.kellermann.model.gdVerwaltung.ServiceType;
 import io.kellermann.model.gdVerwaltung.WorshipMetaData;
 
 import java.io.IOException;
@@ -23,12 +24,14 @@ public class WorshipDeserializer extends StdDeserializer<WorshipMetaData> implem
     private Pattern languagePattern = Pattern.compile("(?<lang>[^_]+$)");
     private SeriesDeserializer seriesDeserializer;
     private PersonDeserializer personDeserializer;
+    private ServiceTypeDeserializer serviceTypeDeserializer;
 
-    public WorshipDeserializer(JsonDeserializer<?> theDefaultDeserializer, SeriesDeserializer seriesDeserializer, PersonDeserializer personDeserializer) {
+    public WorshipDeserializer(JsonDeserializer<?> theDefaultDeserializer, SeriesDeserializer seriesDeserializer, PersonDeserializer personDeserializer, ServiceTypeDeserializer serviceTypeDeserializer) {
         super(WorshipMetaData.class);
         defaultDeserializer = theDefaultDeserializer;
         this.seriesDeserializer = seriesDeserializer;
         this.personDeserializer = personDeserializer;
+        this.serviceTypeDeserializer = serviceTypeDeserializer;
     }
 
 
@@ -49,6 +52,11 @@ public class WorshipDeserializer extends StdDeserializer<WorshipMetaData> implem
         personParser.nextToken();
         PersonMetaData personMetaData = personDeserializer.deserialize(personParser, deserializationContext);
         worshipMetaData.setPerson(personMetaData);
+
+        JsonParser serviceTypeParser = buf.asParser();
+        serviceTypeParser.nextToken();
+        ServiceType serviceType = serviceTypeDeserializer.deserialize(serviceTypeParser, deserializationContext);
+        worshipMetaData.setServiceType(serviceType);
 
 
 

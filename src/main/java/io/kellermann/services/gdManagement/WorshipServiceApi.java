@@ -146,11 +146,13 @@ public class WorshipServiceApi {
 
 
     public WorshipMetaData getWorshipByServiceId(Integer serviceId) {
-        return getAvailableWorships()
+        WorshipMetaData worshipMetaData = getAvailableWorships()
                 .stream()
                 .filter(s -> s.getServiceID().equals(serviceId))
                 .findFirst()
                 .orElse(new WorshipMetaData());
+        System.out.println(worshipMetaData);
+        return worshipMetaData;
     }
 
 
@@ -159,8 +161,8 @@ public class WorshipServiceApi {
      *
      * @return a List of WorshipMetaData
      */
-    public List<WorshipMetaData> getWorshipsTodayOverwritten() {
-        return getWorshipsByDate(config.getDate());
+    public List<WorshipMetaData> getWorshipsToday() {
+        return getWorshipsByDate(LocalDate.now());
     }
 
     /**
@@ -183,7 +185,7 @@ public class WorshipServiceApi {
     }
 
     private boolean isPassed(WorshipMetaData theWorship) {
-        return config.getTime().isAfter(theWorship.getStartTime());
+        return LocalTime.now().isAfter(theWorship.getStartTime());
     }
 
 

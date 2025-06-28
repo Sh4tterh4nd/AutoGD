@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalTime;
 
 @Component
 @ConfigurationProperties(prefix = "autogd.video")
@@ -34,9 +33,6 @@ public class VideoConfiguration {
 
     private String gdVideoOriginalName = "original.mp4";
 
-
-    private LocalTime gdVideoStartTime = LocalTime.MIN;
-    private LocalTime gdVideoEndTime = LocalTime.MIN;
 
     private String finishedGdVideo = "finishedGD.mp4";
 
@@ -111,21 +107,6 @@ public class VideoConfiguration {
         this.loudnormParameter = loudnormParameter;
     }
 
-    public LocalTime getGdVideoStartTime() {
-        return gdVideoStartTime;
-    }
-
-    public void setGdVideoStartTime(LocalTime gdVideoStartTime) {
-        this.gdVideoStartTime = gdVideoStartTime;
-    }
-
-    public LocalTime getGdVideoEndTime() {
-        return gdVideoEndTime;
-    }
-
-    public void setGdVideoEndTime(LocalTime gdVideoEndTime) {
-        this.gdVideoEndTime = gdVideoEndTime;
-    }
 
     public Path getTempWorkspace() {
         return tempWorkspace;
