@@ -1,0 +1,10 @@
+body {
+    padding-top: 120px
+}
+
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}

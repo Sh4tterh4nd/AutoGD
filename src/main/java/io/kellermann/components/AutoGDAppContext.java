@@ -1,18 +1,22 @@
 package io.kellermann.components;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.BeanDescription;
+import com.fasterxml.jackson.databind.DeserializationConfig;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.BeanDeserializerModifier;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
 import io.kellermann.components.deserializers.PersonDeserializer;
 import io.kellermann.components.deserializers.SeriesDeserializer;
+import io.kellermann.components.deserializers.ServiceTypeDeserializer;
 import io.kellermann.components.deserializers.WorshipDeserializer;
 import io.kellermann.config.VideoConfiguration;
 import io.kellermann.model.gdVerwaltung.PersonMetaData;
 import io.kellermann.model.gdVerwaltung.SeriesMetaData;
+import io.kellermann.model.gdVerwaltung.ServiceType;
 import io.kellermann.model.gdVerwaltung.WorshipMetaData;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,7 +44,7 @@ public class AutoGDAppContext {
         module.setDeserializerModifier(new BeanDeserializerModifier() {
             @Override
             public JsonDeserializer<?> modifyDeserializer(DeserializationConfig config, BeanDescription beanDesc, JsonDeserializer<?> deserializer) {
-                return beanDesc.getBeanClass() == WorshipMetaData.class ? new WorshipDeserializer(deserializer, new SeriesDeserializer(deserializer), new PersonDeserializer(deserializer)) : deserializer;
+                return beanDesc.getBeanClass() == WorshipMetaData.class ? new WorshipDeserializer(deserializer, new SeriesDeserializer(deserializer), new PersonDeserializer(deserializer), new ServiceTypeDeserializer(deserializer)) : deserializer;
             }
         });
         return module;
@@ -65,6 +69,18 @@ public class AutoGDAppContext {
             @Override
             public JsonDeserializer<?> modifyDeserializer(DeserializationConfig config, BeanDescription beanDesc, JsonDeserializer<?> deserializer) {
                 return beanDesc.getBeanClass() == PersonMetaData.class ? new PersonDeserializer(deserializer) : deserializer;
+            }
+        });
+        return module;
+    }
+
+    @Bean
+    public SimpleModule serviceTypeDeserializer() {
+        SimpleModule module = new SimpleModule("ServiceType-Deserializer-Module");
+        module.setDeserializerModifier(new BeanDeserializerModifier() {
+            @Override
+            public JsonDeserializer<?> modifyDeserializer(DeserializationConfig config, BeanDescription beanDesc, JsonDeserializer<?> deserializer) {
+                return beanDesc.getBeanClass() == ServiceType.class ? new ServiceTypeDeserializer(deserializer) : deserializer;
             }
         });
         return module;

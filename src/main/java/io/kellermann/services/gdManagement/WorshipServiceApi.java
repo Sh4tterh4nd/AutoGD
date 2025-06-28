@@ -15,6 +15,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -24,10 +27,13 @@ import java.util.Objects;
 public class WorshipServiceApi {
     private WebClient webClient;
     private GDManagementConfig config;
+    List<WorshipMetaData> cachedMetaData = new ArrayList<>();
+    private LocalTime lastUpdate = LocalTime.now();
 
     public WorshipServiceApi(WebClient theWebClient, GDManagementConfig theConfig) {
         webClient = theWebClient;
         config = theConfig;
+
     }
 
     /**
@@ -36,13 +42,16 @@ public class WorshipServiceApi {
      * @return
      */
     public List<WorshipMetaData> getAvailableWorships() {
-        WorshipMetaData[] response = webClient
-                .get()
-                .uri("/interfaces/services/list")
-                .retrieve()
-                .bodyToMono(WorshipMetaData[].class)
-                .block();
-        return Arrays.asList(response);
+        if (cachedMetaData.isEmpty() || lastUpdate.until(LocalTime.now(), ChronoUnit.MINUTES) > 30) {
+            cachedMetaData = Arrays.asList(webClient
+                    .get()
+                    .uri("/interfaces/services/list")
+                    .retrieve()
+                    .bodyToMono(WorshipMetaData[].class)
+                    .block());
+        }
+
+        return cachedMetaData;
     }
 
 
@@ -65,7 +74,7 @@ public class WorshipServiceApi {
         } else {
             mono = webClient.get()
                     .uri(uriBuilder -> uriBuilder
-                            .pathSegment("media", "services", "images", worshipMetaData.getServiceImage())
+                            .pathSegment("media", "services", imageType.equals(ImageType.ALBUMART) ? "albumart" : "images", worshipMetaData.getServiceImage())
                             .build())
                     .retrieve()
                     .bodyToMono(byte[].class);
@@ -89,7 +98,7 @@ public class WorshipServiceApi {
     }
 
     /**
-     * Returns Worships by Date
+     * Returns all Worships from specific date
      *
      * @param theLocalDate
      * @return
@@ -102,14 +111,58 @@ public class WorshipServiceApi {
                 .toList();
     }
 
+    public List<WorshipMetaData> getAllWorshipsFromTheMostRecentWorshipDay(LocalDate theLocalDate) {
+        List<WorshipMetaData> allWorshipsPreviousToDate = getAllWorshipsPreviousToDate(theLocalDate);
+        if (allWorshipsPreviousToDate.isEmpty()) {
+            return allWorshipsPreviousToDate;
+        }
+        LocalDate startDate = allWorshipsPreviousToDate.getFirst().getStartDate();
+
+        return allWorshipsPreviousToDate
+                .stream()
+                .filter(s -> s.getStartDate().isEqual(startDate))
+                .toList();
+    }
+
+    /**
+     * Returns Worships by Date
+     *
+     * @param theLocalDate
+     * @return
+     */
+    public List<WorshipMetaData> getAllWorshipsPreviousToDate(LocalDate theLocalDate) {
+        return getAvailableWorships()
+                .stream()
+                .filter(this::locationFilter)
+                .filter(s -> s.getStartDate().isBefore(theLocalDate) || s.getStartDate().isEqual(theLocalDate))
+                .sorted(Comparator.comparing(WorshipMetaData::getStartDate).reversed())
+                .toList();
+    }
+
+    public List<WorshipMetaData> getAllWorshipsPreviousToToday() {
+        return getAllWorshipsPreviousToDate(LocalDate.now());
+    }
+
+
+
+    public WorshipMetaData getWorshipByServiceId(Integer serviceId) {
+        WorshipMetaData worshipMetaData = getAvailableWorships()
+                .stream()
+                .filter(s -> s.getServiceID().equals(serviceId))
+                .findFirst()
+                .orElse(new WorshipMetaData());
+        System.out.println(worshipMetaData);
+        return worshipMetaData;
+    }
+
 
     /**
      * This returns the worships that are available today, if not specified otherwise in the config.
      *
      * @return a List of WorshipMetaData
      */
-    public List<WorshipMetaData> getWorshipsTodayOverwritten() {
-        return getWorshipsByDate(config.getDate());
+    public List<WorshipMetaData> getWorshipsToday() {
+        return getWorshipsByDate(LocalDate.now());
     }
 
     /**
@@ -123,7 +176,7 @@ public class WorshipServiceApi {
     }
 
     public WorshipMetaData getMostRecentWorship() {
-        return getWorshipsByDate(config.getDate())
+        return getWorshipsByDate(LocalDate.now())
                 .stream()
                 .filter(this::isPassed)
                 .sorted(Comparator.reverseOrder())
@@ -132,7 +185,7 @@ public class WorshipServiceApi {
     }
 
     private boolean isPassed(WorshipMetaData theWorship) {
-        return config.getTime().isAfter(theWorship.getStartTime());
+        return LocalTime.now().isAfter(theWorship.getStartTime());
     }
 
 

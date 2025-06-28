@@ -1,0 +1,46 @@
+<!--EXTERNAL most of the menu is just copied from bootswatch.com-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+</head>
+<body>
+<div class="navbar navbar-expand-lg fixed-top navbar-dark bg-primary" th:fragment="navigation">
+    <div class="container">
+        <a href="/" class="navbar-brand">AutoGD</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive"
+                aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <select class="form-control" style="width: 15em" id="worshipselect"
+                            onchange="this.options[this.selectedIndex].value && (window.location = '/?id=' + this.options[this.selectedIndex].value);">
+                        <!--/*@thymesVar id="lastWorships" type="java.util.List<io.kellermann.model.gdVerwaltung.WorshipMetaData>"*/-->
+                        <th:block th:each="worship, iStat: ${lastWorships}">
+                            <!--                            <th:block th:if="${worship.getVideoLink() == null}">-->
+                                <option th:value="${worship.getServiceID()}"
+                                        th:text="${worship.startDate + ' ' + worship.getServiceTitle(worship.getServiceLanguage())}"></option>
+                            <!--                            </th:block>-->
+
+                        </th:block>
+                    </select>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Video</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/pocast">Podcast</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/help">Help</a>
+                </li>
+            </ul>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

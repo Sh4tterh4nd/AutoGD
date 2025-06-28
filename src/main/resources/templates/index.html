@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main}">
+<head>
+    <meta charset="UTF-8">
+    <title>AutoGD</title>
+</head>
+<body>
+
+<th:block layout:fragment="content">
+
+    <div class="row">
+        <div class="container">
+            <h3 th:text="'Gottesdienst: ' + ${worshipMetadata.getServiceTitle(worshipMetadata.getServiceLanguage())}"></h3>
+            <h5 th:text="'Serie: ' + ${worshipMetadata.getSeries().getTitleLanguage(worshipMetadata.getServiceLanguage())}"></h5>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <div class="col">
+            <video id="player" controls preload="metadata" style="width: 100%; height: auto">
+                <source th:src="${'/api/service/stream/' + worshipMetadata.getServiceID()}"
+                        type="video/mp4">
+            </video>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <button id="start" class="btn btn-primary">Start</button>
+            <button id="end" class="btn btn-primary">End</button>
+            <button id="startGeneration" class="btn btn-danger">Start Generation</button>
+        </div>
+    </div>
+
+
+    <p>StartTime: <span id="startTime"></span></p>
+    <p>EndTime: <span id="endTime"></span></p>
+
+
+    <script th:inline="javascript">
+        function printTimes() {
+            document.getElementById('startTime').textContent = formatTime(startTime);
+            document.getElementById('endTime').textContent = formatTime(endTime);
+        }
+
+        function formatTime(seconds) {
+            var date = new Date(null);
+            date.setMilliseconds(seconds * 1000);
+            return date.toISOString().substr(11, 11);
+        }
+
+        var player = document.getElementById('player');
+        var startButton = document.getElementById('start');
+        var endButton = document.getElementById('end');
+        var startTime = null;
+        var endTime = null;
+        var serviceID = "[[${worshipMetadata.getServiceID()}]]";
+
+        startButton.addEventListener("click", function () {
+            startTime = player.currentTime;
+            printTimes();
+
+        });
+        endButton.addEventListener("click", function () {
+            endTime = player.currentTime;
+            printTimes();
+        });
+
+        document.getElementById('startGeneration').addEventListener("click", function () {
+            if (endTime > startTime) {
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", '/api/service/generate', true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.send(JSON.stringify({
+                    "startTime": formatTime(startTime),
+                    "endTime": formatTime(endTime),
+                    "serviceId": serviceID
+                }));
+                window.location.href = "/status";
+            } else {
+                alert("Startzeit muss grösser sein als Endzeit")
+            }
+
+        });
+
+    </script>
+
+
+</th:block>
+</body>
+</html>

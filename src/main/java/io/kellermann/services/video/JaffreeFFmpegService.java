@@ -8,7 +8,9 @@ import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import io.kellermann.config.VideoConfiguration;
+import io.kellermann.model.gd.StatusKeys;
 import io.kellermann.model.gdVerwaltung.WorshipMetaData;
+import io.kellermann.services.StatusService;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -18,14 +20,19 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class JaffreeFFmpegService {
 
-    private VideoConfiguration videoConfiguration;
+    private final VideoConfiguration videoConfiguration;
+    private final StatusService statusService;
+    private Pattern LOG_TIME_REGEX = Pattern.compile("time=(?<time>\\d+:\\d+:\\d+(\\.\\d*))");
 
-    public JaffreeFFmpegService(VideoConfiguration videoConfiguration) {
+    public JaffreeFFmpegService(VideoConfiguration videoConfiguration, StatusService statusService) {
         this.videoConfiguration = videoConfiguration;
+        this.statusService = statusService;
     }
 
     public void imageToVideo(Path imagePath, Path videoOutput, double duration) {
@@ -50,16 +57,21 @@ public class JaffreeFFmpegService {
                 .setOutputListener(new OutputListener() {
                     @Override
                     public void onOutput(String s) {
-                        System.out.println(s);
+                        statusService.sendLogUpdate(s);
                     }
                 })
                 .execute();
     }
 
     public void concatVideoAndMergeAudio(Path output, Path audio, List<Path> videos) {
+        LocalTime loc = LocalTime.MIN;
+        for (Path video : videos) {
+            loc = loc.plusNanos(getDurationLocalTime(video).toNanoOfDay());
+        }
         FFmpeg fFmpeg = FFmpeg.atPath();
         videos.forEach(s -> fFmpeg.addInput(UrlInput.fromPath(s)));
         fFmpeg.addInput(UrlInput.fromPath(audio));
+        LocalTime finalLoc = loc;
         fFmpeg
                 .setComplexFilter(concatVideoFilterBuilder(videos.size()) + ";[a][" + videos.size() + ":a] amix=inputs=2:duration=longest [aOut] ")
                 .addArguments("-map", "[aOut]")
@@ -70,10 +82,16 @@ public class JaffreeFFmpegService {
                 .setOutputListener(new OutputListener() {
                     @Override
                     public void onOutput(String s) {
-                        System.out.println(s);
+                        statusService.sendLogUpdate(s);
+                        LocalTime currentTime = getLocalTimeFromLog(s);
+                        if (currentTime != LocalTime.MIN) {
+                            double progress = ((double) currentTime.toNanoOfDay() / finalLoc.toNanoOfDay());
+                            statusService.sendFullDetail(StatusKeys.VIDEO_INTRO, progress, "");
+                        }
                     }
                 })
                 .execute();
+        statusService.sendFullDetail(StatusKeys.VIDEO_INTRO, 1.0, "Finished Intro Generation");
     }
 
     public void concatVideoAndMergeAudio(Path output, Path audio, Path... videos) {
@@ -90,6 +108,7 @@ public class JaffreeFFmpegService {
      * @param onlyAudio define if only the Audio should be extracted
      */
     public void cutAudioVideo(LocalTime start, LocalTime end, Path input, Path output, boolean onlyAudio) {
+        LocalTime finalLoc = getDurationLocalTime(input);
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss.SS");
         FFmpeg ffmpegPack = FFmpeg
                 .atPath()
@@ -98,9 +117,9 @@ public class JaffreeFFmpegService {
                         .addArguments("-to", end.format(dateTimeFormatter)));
         if (onlyAudio) {
             ffmpegPack
-                    .addOutput(UrlOutput.toPath(output)
-                            .setCodec(StreamType.AUDIO, "copy")
-                            .addArguments("-b:a", "192k"));
+                    .addOutput(UrlOutput.toPath(output));
+//                            .setCodec(StreamType.AUDIO, "copy")
+//                            .addArguments("-b:a", "192k"));
         } else {
             ffmpegPack
                     .addOutput(UrlOutput.toPath(output)
@@ -110,10 +129,16 @@ public class JaffreeFFmpegService {
         }
 
         ffmpegPack
-                .setOutputListener(new OutputListener() {
-                    @Override
-                    public void onOutput(String s) {
-                        System.out.println(s);
+                .setOutputListener(s -> {
+                    statusService.sendLogUpdate(s);
+                    LocalTime currentTime = getLocalTimeFromLog(s);
+                    if (currentTime != LocalTime.MIN) {
+                        double progress = ((double) currentTime.toNanoOfDay() / finalLoc.toNanoOfDay());
+                        if (onlyAudio) {
+                            statusService.sendFullDetail(StatusKeys.VIDEO_CUT, progress, "");
+                        } else {
+                            statusService.sendFullDetail(StatusKeys.PODCAST_CUT, progress, "");
+                        }
                     }
                 })
                 .execute();
@@ -138,6 +163,11 @@ public class JaffreeFFmpegService {
      * @param fadeDuration the fade duration in seconds
      */
     public void concatVideo(Path output, List<Path> videos, double fadeDuration) {
+        LocalTime loc = LocalTime.MIN;
+        for (Path video : videos) {
+            loc = loc.plusNanos(getDurationLocalTime(video).toNanoOfDay());
+        }
+        LocalTime finalLoc = loc;
         FFmpeg fFmpeg = FFmpeg
                 .atPath()
                 .setOverwriteOutput(true);
@@ -163,7 +193,13 @@ public class JaffreeFFmpegService {
         fFmpeg.setOutputListener(new OutputListener() {
             @Override
             public void onOutput(String s) {
-                System.out.println(s);
+                statusService.sendLogUpdate(s);
+                LocalTime currentTime = getLocalTimeFromLog(s);
+                if (currentTime != LocalTime.MIN) {
+                    double progress = ((double) currentTime.toNanoOfDay() / finalLoc.toNanoOfDay());
+//                    statusService.sendDetailStatus("Video und Audio Zusammensetzen", progress);
+                    statusService.sendFullDetail(StatusKeys.VIDEO_GENERATION, progress, "");
+                }
             }
         });
         fFmpeg.execute();
@@ -178,6 +214,11 @@ public class JaffreeFFmpegService {
      * @param crossFadeDuration the fade duration in seconds
      */
     public void concatAudio(Path output, List<Path> audioSegments, double crossFadeDuration) {
+        LocalTime loc = LocalTime.MIN;
+        for (Path video : audioSegments) {
+            loc = loc.plusNanos(getDurationLocalTime(video).toNanoOfDay());
+        }
+        LocalTime finalLoc = loc;
         FFmpeg fFmpeg = FFmpeg
                 .atPath()
                 .setOverwriteOutput(true);
@@ -190,14 +231,20 @@ public class JaffreeFFmpegService {
         fFmpeg.addOutput(UrlOutput.toPath(output)
 //                .addArguments("-acodec", "libmp3lame")
 //                .addArguments("-b:a", "192000")
-                .addArguments("-map", "[aud]")
-                .addArguments("-preset", "fast")
+                        .addArguments("-map", "[aud]")
+                        .addArguments("-preset", "fast")
         );
+
 
         fFmpeg.setOutputListener(new OutputListener() {
             @Override
             public void onOutput(String s) {
-                System.out.println(s);
+                statusService.sendLogUpdate(s);
+                LocalTime currentTime = getLocalTimeFromLog(s);
+                if (currentTime != LocalTime.MIN) {
+                    double progress = ((double) currentTime.toNanoOfDay() / finalLoc.toNanoOfDay());
+                    statusService.sendFullDetail(StatusKeys.PODCAST_MERGE, progress, "");
+                }
             }
         });
         fFmpeg.execute();
@@ -215,17 +262,19 @@ public class JaffreeFFmpegService {
 
 
     public LocalTime getDurationLocalTime(Path path) {
-        FFprobeResult res = FFprobe.atPath()
-                .setShowStreams(true)
-                .setInput(path)
-                .execute();
-        for (com.github.kokorin.jaffree.ffprobe.Stream stream : res.getStreams()) {
-            if (stream.getCodecType().equals(StreamType.VIDEO)) {
-                float l = stream.getDuration() * 1000000000;
-                return LocalTime.ofNanoOfDay((long) l);
+        if (Files.exists(path)) {
+            FFprobeResult res = FFprobe.atPath()
+                    .setShowStreams(true)
+                    .setInput(path)
+                    .execute();
+            for (com.github.kokorin.jaffree.ffprobe.Stream stream : res.getStreams()) {
+                if (stream.getCodecType().equals(StreamType.VIDEO)) {
+                    float l = stream.getDuration() * 1000000000;
+                    return LocalTime.ofNanoOfDay((long) l);
+                }
             }
         }
-        return null;
+        return LocalTime.MIN.plusNanos(1);
     }
 
 
@@ -310,7 +359,8 @@ public class JaffreeFFmpegService {
         if (numberOfFiles > 1) {
             command = new StringBuilder("[0][1]acrossfade=d=" + duration + ":c1=tri:c2=tri");
             for (int i = 2; i < numberOfFiles; i++) {
-                command.append("[a").append(i - 1).append("];").append("[a").append(i - 1).append("][1]acrossfade=d=").append(duration).append(":c1=tri:c2=tri");
+                command.append("[a").append(i - 1).append("];")
+                        .append("[a").append(i - 1).append("][").append(i).append("]acrossfade=d=").append(duration).append(":c1=tri:c2=tri");
             }
             command.append("[a]");
         }
@@ -330,6 +380,7 @@ public class JaffreeFFmpegService {
 
 
     public void generateImageFromVideo(LocalTime start, LocalTime end, Path video, Path outDir, double frameRate) {
+        LocalTime finalLoc = end.minusNanos(start.toNanoOfDay());
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss.SS");
         FFmpeg
                 .atPath()
@@ -341,16 +392,19 @@ public class JaffreeFFmpegService {
                         .addArguments("-qscale:v", "4")
 //                        .addArgument("-copyts")
                         .addArguments("-vf", "fps=" + frameRate))
-                .setOutputListener(new OutputListener() {
-                    @Override
-                    public void onOutput(String s) {
-                        System.out.println(s);
+                .setOutputListener(s -> {
+                    statusService.sendLogUpdate(s);
+                    LocalTime currentTime = getLocalTimeFromLog(s);
+                    if (currentTime != LocalTime.MIN) {
+                        double progress = ((double) currentTime.toNanoOfDay() / finalLoc.toNanoOfDay());
+                        statusService.sendFullDetail(StatusKeys.VIDEO_THUMBNAIL_PREPARE, progress, "");
                     }
                 })
                 .execute();
     }
 
     public void convertToPodcastMp3WithMetadata(Path input, Path albumart, Path output, WorshipMetaData worshipMetaData) throws IOException {
+        LocalTime podcast = getDurationLocalTime(input);
         Files.deleteIfExists(output);
         FFmpeg
                 .atPath()
@@ -377,11 +431,24 @@ public class JaffreeFFmpegService {
                 .setOutputListener(new OutputListener() {
                     @Override
                     public void onOutput(String s) {
-                        System.out.println(s);
+                        statusService.sendLogUpdate(s);
+                        LocalTime currentTime = getLocalTimeFromLog(s);
+                        if (currentTime != LocalTime.MIN) {
+                            double progress = ((double) currentTime.toNanoOfDay() / podcast.toNanoOfDay());
+                            statusService.sendFullDetail(StatusKeys.PODCAST_TO_MP3, progress, "");
+                        }
                     }
                 })
                 .execute();
 
+    }
+
+    public LocalTime getLocalTimeFromLog(String log) {
+        Matcher matcher = LOG_TIME_REGEX.matcher(log);
+        if (matcher.find()) {
+            return LocalTime.parse(matcher.group("time"));
+        }
+        return LocalTime.MIN;
     }
 
 }

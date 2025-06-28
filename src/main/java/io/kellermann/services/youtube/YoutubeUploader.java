@@ -29,7 +29,9 @@ import com.google.api.services.youtube.model.Video;
 import com.google.api.services.youtube.model.VideoSnippet;
 import com.google.api.services.youtube.model.VideoStatus;
 import io.kellermann.config.YoutubeConfiguration;
+import io.kellermann.model.gd.StatusKeys;
 import io.kellermann.model.gdVerwaltung.WorshipMetaData;
+import io.kellermann.services.StatusService;
 import org.springframework.stereotype.Service;
 
 import java.io.FileInputStream;
@@ -42,19 +44,19 @@ import java.util.Objects;
 @Service
 public class YoutubeUploader {
     private final String VIDEO_FILE_FORMAT = "video/*";
+    private final YoutubeConfiguration ytYoutubeConfiguration;
 
-    private YoutubeConfiguration ytYoutubeConfiguration;
+    private final TemplatingEngine templatingEngine;
+    private final YouTube youTube;
+    private final StatusService statusService;
 
-    private TemplatingEngine templatingEngine;
 
-    private YouTube youTube;
-
-    public YoutubeUploader(YouTube youtube, YoutubeConfiguration ytYoutubeConfiguration, TemplatingEngine templatingEngine) {
+    public YoutubeUploader(YoutubeConfiguration ytYoutubeConfiguration, TemplatingEngine templatingEngine, YouTube youTube, StatusService statusService) {
         this.ytYoutubeConfiguration = ytYoutubeConfiguration;
         this.templatingEngine = templatingEngine;
-        this.youTube = youtube;
+        this.youTube = youTube;
+        this.statusService = statusService;
     }
-
 
     public void insertVideoToPlaylist(Video video, WorshipMetaData worshipMetaData) throws IOException {
         ResourceId resourceId = new ResourceId();
@@ -146,18 +148,25 @@ public class YoutubeUploader {
                     switch (uploader.getUploadState()) {
                         case INITIATION_STARTED:
                             System.out.println("Initiation Started");
+                            statusService.sendLogUpdate("Initiation Started");
                             break;
                         case INITIATION_COMPLETE:
                             System.out.println("Initiation Completed");
+                            statusService.sendLogUpdate("Initiation Completed");
                             break;
                         case MEDIA_IN_PROGRESS:
                             System.out.println("Upload percentage: " + uploader.getProgress());
+                            statusService.sendLogUpdate("Upload percentage: " + uploader.getProgress());
+                            statusService.sendFullDetail(StatusKeys.VIDEO_UPLOAD, uploader.getProgress(), "");
                             break;
                         case MEDIA_COMPLETE:
                             System.out.println("Upload Completed!");
+                            statusService.sendLogUpdate("Upload Completed!");
+                            statusService.sendFullDetail(StatusKeys.VIDEO_UPLOAD, 1.0, "");
                             break;
                         case NOT_STARTED:
                             System.out.println("Upload Not Started!");
+                            statusService.sendLogUpdate("Upload Not Started!");
                             break;
                     }
                 }
@@ -168,7 +177,9 @@ public class YoutubeUploader {
             Video returnedVideo = videoInsert.execute();
 
             if (Objects.nonNull(worshipMetaData.getSeries().getId())) {
+                statusService.sendFullDetail(StatusKeys.VIDEO_PLAYLIST, 0.0, "");
                 insertVideoToPlaylist(returnedVideo, worshipMetaData);
+                statusService.sendFullDetail(StatusKeys.VIDEO_PLAYLIST, 1.0, "");
             }
 
 

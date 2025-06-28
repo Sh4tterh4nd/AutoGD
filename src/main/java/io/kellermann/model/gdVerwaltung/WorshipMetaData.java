@@ -32,9 +32,17 @@ public class WorshipMetaData implements Comparable<WorshipMetaData> {
 	@JsonProperty("service_albumart")
 	private String service_albumart;
 
+	@JsonProperty("service_videolink")
+	private String videoLink;
+
+	@JsonProperty("service_youtubechannel_id")
+	private String youtubeChannelId;
+
 	private SeriesMetaData series;
 
 	private PersonMetaData person;
+
+	private ServiceType serviceType;
 
 	private Map<Language, String> serviceTitleByLanguage = new HashMap<Language, String>();
 
@@ -52,6 +60,14 @@ public class WorshipMetaData implements Comparable<WorshipMetaData> {
 
 	public void setServiceID(Integer serviceID) {
 		this.serviceID = serviceID;
+	}
+
+	public ServiceType getServiceType() {
+		return serviceType;
+	}
+
+	public void setServiceType(ServiceType serviceType) {
+		this.serviceType = serviceType;
 	}
 
 	public PersonMetaData getPerson() {
@@ -126,6 +142,22 @@ public class WorshipMetaData implements Comparable<WorshipMetaData> {
 		this.service_albumart = service_albumart;
 	}
 
+	public String getVideoLink() {
+		return videoLink;
+	}
+
+	public void setVideoLink(String videoLink) {
+		this.videoLink = videoLink;
+	}
+
+	public String getYoutubeChannelId() {
+		return youtubeChannelId;
+	}
+
+	public void setYoutubeChannelId(String youtubeChannelId) {
+		this.youtubeChannelId = youtubeChannelId;
+	}
+
 	@Override
 	public String toString() {
 		return "WorshipMetaData{" +
@@ -136,8 +168,11 @@ public class WorshipMetaData implements Comparable<WorshipMetaData> {
 				", campusShortname='" + campusShortname + '\'' +
 				", serviceImage='" + serviceImage + '\'' +
 				", service_albumart='" + service_albumart + '\'' +
+				", videoLink='" + videoLink + '\'' +
+				", youtubeChannelId='" + youtubeChannelId + '\'' +
 				", series=" + series +
 				", person=" + person +
+				", serviceType=" + serviceType +
 				", serviceTitleByLanguage=" + serviceTitleByLanguage +
 				'}';
 	}
