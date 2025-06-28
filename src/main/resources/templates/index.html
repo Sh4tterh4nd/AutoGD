@@ -9,7 +9,19 @@
 <body>
 
 <th:block layout:fragment="content">
+    <select class="form-control" style="width: 25em" id="worshipselect"
+            onchange="this.options[this.selectedIndex].value && (window.location = '/?id=' + this.options[this.selectedIndex].value);">
+        <!--/*@thymesVar id="lastWorships" type="java.util.List<io.kellermann.model.gdVerwaltung.WorshipMetaData>"*/-->
+        <th:block th:each="worship, iStat: ${lastWorships}">
+            <!--            <th:block th:if="${worship.getVideoLink() == null}">-->
+            <th:block th:if="${worship.getServiceType().getWebprio() == 2}">
+                <option th:value="${worship.getServiceID()}"
+                        th:text="${worship.startDate +'  ' + worship.getServiceType().getId() +' ' + worship.getServiceTitle(worship.getServiceLanguage())}"></option>
+            </th:block>
+            <!--            </th:block>-->
 
+        </th:block>
+    </select>
     <div class="row">
         <div class="container">
             <h3 th:text="'Gottesdienst: ' + ${worshipMetadata.getServiceTitle(worshipMetadata.getServiceLanguage())}"></h3>

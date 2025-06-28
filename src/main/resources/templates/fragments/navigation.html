@@ -14,19 +14,19 @@
         <div class="collapse navbar-collapse" id="navbarResponsive">
 
             <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
-                    <select class="form-control" style="width: 15em" id="worshipselect"
-                            onchange="this.options[this.selectedIndex].value && (window.location = '/?id=' + this.options[this.selectedIndex].value);">
-                        <!--/*@thymesVar id="lastWorships" type="java.util.List<io.kellermann.model.gdVerwaltung.WorshipMetaData>"*/-->
-                        <th:block th:each="worship, iStat: ${lastWorships}">
-                            <!--                            <th:block th:if="${worship.getVideoLink() == null}">-->
-                                <option th:value="${worship.getServiceID()}"
-                                        th:text="${worship.startDate + ' ' + worship.getServiceTitle(worship.getServiceLanguage())}"></option>
-                            <!--                            </th:block>-->
+                <!--                <li class="nav-item">-->
+                <!--                    <select class="form-control" style="width: 15em" id="worshipselect"-->
+                <!--                            onchange="this.options[this.selectedIndex].value && (window.location = '/?id=' + this.options[this.selectedIndex].value);">-->
+                <!--                        &lt;!&ndash;/*@thymesVar id="lastWorships" type="java.util.List<io.kellermann.model.gdVerwaltung.WorshipMetaData>"*/&ndash;&gt;-->
+                <!--                        <th:block th:each="worship, iStat: ${lastWorships}">-->
+                <!--                            &lt;!&ndash;                            <th:block th:if="${worship.getVideoLink() == null}">&ndash;&gt;-->
+                <!--                                <option th:value="${worship.getServiceID()}"-->
+                <!--                                        th:text="${worship.startDate + ' ' + worship.getServiceTitle(worship.getServiceLanguage())}"></option>-->
+                <!--                            &lt;!&ndash;                            </th:block>&ndash;&gt;-->
 
-                        </th:block>
-                    </select>
-                </li>
+                <!--                        </th:block>-->
+                <!--                    </select>-->
+                <!--                </li>-->
                 <li class="nav-item">
                     <a class="nav-link" href="/">Video</a>
                 </li>
