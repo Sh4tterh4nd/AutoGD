@@ -46,7 +46,6 @@ public class UtilityComponent {
      * @throws IOException
      */
     public Path getMainRecording(WorshipMetaData worshipMetaData) throws IOException {
-        System.out.println(worshipMetaData);
         Path recordings = videoConfiguration.getRecordings();
         LocalDateTime worshipDateTimeOffset = worshipMetaData.getStartDate().atTime(worshipMetaData.getStartTime()).plusMinutes(15);
 

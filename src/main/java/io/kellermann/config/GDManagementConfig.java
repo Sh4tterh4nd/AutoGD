@@ -9,11 +9,6 @@ import org.springframework.stereotype.Component;
 public class GDManagementConfig {
     private String location;
 
-//    @DateTimeFormat(fallbackPatterns = "dd.MM.yyyy")
-//    private LocalDate date = LocalDate.now();
-//
-//    private LocalTime time = LocalTime.now();
-
     @Value("${autogd.gdverwaltung.token}")
     private String token;
 
