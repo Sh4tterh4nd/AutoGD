@@ -27,6 +27,7 @@ public class VideoConfiguration {
     private String introSoundName = "1_introsound.mp4";
     private String outroVideoName = "3_outro.mp4";
 
+
     private String introPodcastName = "1_podcast_intro.mp3";
     private String outroPodcastName = "3_podcast_outro.mp3";
 
@@ -126,16 +127,16 @@ public class VideoConfiguration {
     }
 
 
-    public Path getIntroVideoName() {
-        return resources.resolve(introVideoName);
+    public String getIntroVideoName() {
+        return introVideoName;
     }
 
     public void setIntroVideoName(String introVideoName) {
         this.introVideoName = introVideoName;
     }
 
-    public Path getIntroSoundName() {
-        return resources.resolve(introSoundName);
+    public String getIntroSoundName() {
+        return introSoundName;
     }
 
     public void setIntroSoundName(String introSoundName) {
@@ -150,8 +151,8 @@ public class VideoConfiguration {
         this.gdVideoOriginalName = gdVideoOriginalName;
     }
 
-    public Path getOutroVideoName() {
-        return resources.resolve(outroVideoName);
+    public String getOutroVideoName() {
+        return outroVideoName;
     }
 
     public void setOutroVideoName(String outroVideoName) {
@@ -159,16 +160,16 @@ public class VideoConfiguration {
     }
 
 
-    public Path getIntroPodcastName() {
-        return resources.resolve(introPodcastName);
+    public String getIntroPodcastName() {
+        return introPodcastName;
     }
 
     public void setIntroPodcastName(String introPodcastName) {
         this.introPodcastName = introPodcastName;
     }
 
-    public Path getOutroPodcastName() {
-        return resources.resolve(outroPodcastName);
+    public String getOutroPodcastName() {
+        return outroPodcastName;
     }
 
     public void setOutroPodcastName(String outroPodcastName) {

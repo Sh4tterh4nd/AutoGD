@@ -17,15 +17,15 @@ import java.util.Objects;
 
 @Service
 public class VideoGenerationService {
-    private final VideoConfiguration videoConfiguration;
+    private final VideoConfiguration vidConfig;
     private final JaffreeFFmpegService jaffreeFFmpegService;
     private final WorshipServiceApi worshipServiceApi;
     private final UtilityComponent utility;
 
     private final StatusService statusService;
 
-    public VideoGenerationService(VideoConfiguration videoConfiguration, JaffreeFFmpegService jaffreeFFmpegService, WorshipServiceApi worshipServiceApi, UtilityComponent utilityComponent, StatusService statusService) {
-        this.videoConfiguration = videoConfiguration;
+    public VideoGenerationService(VideoConfiguration vidConfig, JaffreeFFmpegService jaffreeFFmpegService, WorshipServiceApi worshipServiceApi, UtilityComponent utilityComponent, StatusService statusService) {
+        this.vidConfig = vidConfig;
         this.jaffreeFFmpegService = jaffreeFFmpegService;
         this.worshipServiceApi = worshipServiceApi;
         this.utility = utilityComponent;
@@ -38,18 +38,20 @@ public class VideoGenerationService {
      * @throws IOException
      */
     public Path gemerateGDVideo(WorshipMetaData worshipMetaData, GdJob gdJob) throws IOException {
-        setupWorkspace(videoConfiguration.getTempWorkspace());
-        Path tempWorkspace = videoConfiguration.getTempWorkspace();
+        Path tmpWorkspace = vidConfig.getTempWorkspace().resolve(worshipMetaData.getServiceID().toString());
+        Path resourceDir = vidConfig.getResources().resolve(worshipMetaData.getServiceType().getNameLanguage(worshipMetaData.getServiceLanguage()));
+
+        setupWorkspace(tmpWorkspace);
         Path widescreenImage;
         if (Objects.isNull(worshipMetaData.getServiceImage()) || worshipMetaData.getServiceImage().isBlank()) {
-            widescreenImage = tempWorkspace.resolve("widescreen_" + worshipMetaData.getSeries().getAlbumartLanguage(worshipMetaData.getServiceLanguage()));
+            widescreenImage = tmpWorkspace.resolve("widescreen_" + worshipMetaData.getSeries().getAlbumartLanguage(worshipMetaData.getServiceLanguage()));
         } else {
-            widescreenImage = tempWorkspace.resolve("widescreen_" + worshipMetaData.getServiceImage());
+            widescreenImage = tmpWorkspace.resolve("widescreen_" + worshipMetaData.getServiceImage());
         }
 
 
-        Path imageIntro = tempWorkspace.resolve("image_intro.mp4");
-        Path renderedIntro = tempWorkspace.resolve("rendered_intro.mp4");
+        Path imageIntro = tmpWorkspace.resolve("image_intro.mp4");
+        Path renderedIntro = tmpWorkspace.resolve("rendered_intro.mp4");
 
         worshipServiceApi.saveGDImageTo(ImageType.WIDESCREEN, worshipMetaData, widescreenImage);
 
@@ -59,23 +61,35 @@ public class VideoGenerationService {
 
 
         //Merge intro parts to introVideo
-        jaffreeFFmpegService.concatVideoAndMergeAudio(renderedIntro, videoConfiguration.getIntroSoundName(), imageIntro, videoConfiguration.getIntroVideoName());
+        jaffreeFFmpegService.concatVideoAndMergeAudio(renderedIntro,
+                resourceDir.resolve(vidConfig.getIntroSoundName()),
+                imageIntro,
+                resourceDir.resolve(vidConfig.getIntroVideoName()));
 
 
         //Cut original main video
-        Path originalCut = tempWorkspace.resolve("original_cut.mp4");
-        jaffreeFFmpegService.cutAudioVideo(gdJob.startTime(), gdJob.endTime(), utility.getMainRecording(worshipMetaData), originalCut, false);
+        Path originalCut = tmpWorkspace.resolve("original_cut.mp4");
+        jaffreeFFmpegService.cutAudioVideo(gdJob.startTime(),
+                gdJob.endTime(),
+                utility.getMainRecording(worshipMetaData),
+                originalCut,
+                false);
+
 //        jaffreeFFmpegService.cutAudioVideo(videoConfiguration.getGdVideoStartTime(), videoConfiguration.getGdVideoEndTime(), utility.getMainRecording(worshipMetaData), originalCut, false);
 
         //Render finished GD
-        jaffreeFFmpegService.concatVideo(videoConfiguration.getOutput().resolve("finalGD.mp4"), 1.5, renderedIntro, originalCut, videoConfiguration.getOutroVideoName());
+        jaffreeFFmpegService.concatVideo(vidConfig.getOutput().resolve("finalGD.mp4"),
+                1.5,
+                renderedIntro,
+                originalCut,
+                resourceDir.resolve(vidConfig.getOutroVideoName()));
 
         //Generate podcast
 //        jaffreeFFmpegService.convertToWav(videoConfiguration.getOutput().resolve("finalGD.mp4"), videoConfiguration.getWavTarget().resolve("podcast.wav"));
 
-        setupWorkspace(videoConfiguration.getTempWorkspace());
+        setupWorkspace(tmpWorkspace);
 
-        return videoConfiguration.getOutput().resolve("finalGD.mp4");
+        return vidConfig.getOutput().resolve("finalGD.mp4");
     }
 
 

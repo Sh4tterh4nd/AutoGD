@@ -151,7 +151,6 @@ public class WorshipServiceApi {
                 .filter(s -> s.getServiceID().equals(serviceId))
                 .findFirst()
                 .orElse(new WorshipMetaData());
-        System.out.println(worshipMetaData);
         return worshipMetaData;
     }
 

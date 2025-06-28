@@ -27,15 +27,15 @@ import java.util.Objects;
 public class PodcastGenerationService {
 
     private final FtpConnector ftpConnector;
-    private final VideoConfiguration videoConfiguration;
+    private final VideoConfiguration vidConfig;
     private final WorshipServiceApi worshipServiceApi;
     private final JaffreeFFmpegService jaffreeFFmpegService;
     private final UtilityComponent utility;
     private final StatusService statusService;
 
-    public PodcastGenerationService(FtpConnector ftpConnector, VideoConfiguration videoConfiguration, WorshipServiceApi worshipServiceApi, JaffreeFFmpegService jaffreeFFmpegService, UtilityComponent utility, StatusService statusService) {
+    public PodcastGenerationService(FtpConnector ftpConnector, VideoConfiguration vidConfig, WorshipServiceApi worshipServiceApi, JaffreeFFmpegService jaffreeFFmpegService, UtilityComponent utility, StatusService statusService) {
         this.ftpConnector = ftpConnector;
-        this.videoConfiguration = videoConfiguration;
+        this.vidConfig = vidConfig;
         this.worshipServiceApi = worshipServiceApi;
         this.jaffreeFFmpegService = jaffreeFFmpegService;
         this.utility = utility;
@@ -50,12 +50,14 @@ public class PodcastGenerationService {
      * @throws IOException
      */
     public Path generateGDPodcast(WorshipMetaData worshipMetaData, GdJob gdJob) throws IOException {
-        Path tempWorkspace = videoConfiguration.getTempWorkspace();
+        Path tmpWorkspace = vidConfig.getTempWorkspace().resolve(worshipMetaData.getServiceID().toString());
+        Path resourceDir = vidConfig.getResources().resolve(worshipMetaData.getServiceType().getNameLanguage(worshipMetaData.getServiceLanguage()));
+
         Path albumartImage;
         if (Objects.isNull(worshipMetaData.getService_albumart()) || worshipMetaData.getService_albumart().isBlank()) {
-            albumartImage = tempWorkspace.resolve("albumart_" + worshipMetaData.getSeries().getAlbumartLanguage(worshipMetaData.getServiceLanguage()));
+            albumartImage = tmpWorkspace.resolve("albumart_" + worshipMetaData.getSeries().getAlbumartLanguage(worshipMetaData.getServiceLanguage()));
         } else {
-            albumartImage = tempWorkspace.resolve("albumart_" + worshipMetaData.getService_albumart());
+            albumartImage = tmpWorkspace.resolve("albumart_" + worshipMetaData.getService_albumart());
         }
         statusService.sendFullDetail(StatusKeys.PODCAST_ALBUMART, 0., "");
         worshipServiceApi.saveGDImageTo(ImageType.ALBUMART, worshipMetaData, albumartImage);
@@ -63,22 +65,25 @@ public class PodcastGenerationService {
         statusService.sendFullDetail(StatusKeys.PODCAST_ALBUMART, 1., "");
 
 
-        Path originalCut = tempWorkspace.resolve("original_cut.wav");
-        jaffreeFFmpegService.cutAudioVideo(gdJob.startTime(), gdJob.endTime(), utility.getMainRecording(worshipMetaData), originalCut, true);
-        System.err.println("Podcast was Cut");
+        Path originalCut = tmpWorkspace.resolve("original_cut.wav");
+        jaffreeFFmpegService.cutAudioVideo(
+                gdJob.startTime(),
+                gdJob.endTime(),
+                utility.getMainRecording(worshipMetaData),
+                originalCut,
+                true);
         List<Path> audioSegmentsList = new ArrayList<>();
 
-        audioSegmentsList.add(videoConfiguration.getIntroPodcastName());
+        audioSegmentsList.add(resourceDir.resolve(vidConfig.getIntroPodcastName()));
         audioSegmentsList.add(originalCut);
-        audioSegmentsList.add(videoConfiguration.getOutroPodcastName());
+        audioSegmentsList.add(resourceDir.resolve(vidConfig.getOutroPodcastName()));
 
-        Path tempPodcast = videoConfiguration.getTempWorkspace().resolve("temp-podcast.wav");
-
+        Path tempPodcast = tmpWorkspace.resolve("temp-podcast.wav");
         jaffreeFFmpegService.concatAudio(tempPodcast, audioSegmentsList, 2.5);
-        System.err.println("Podcast was Merged with intro / Outro");
+
 
         String generatePodcastName = podcastNameGenerator(worshipMetaData);
-        Path podcastFilePath = videoConfiguration.getTempWorkspace().resolve(generatePodcastName);
+        Path podcastFilePath = tmpWorkspace.resolve(generatePodcastName);
 
         jaffreeFFmpegService.convertToPodcastMp3WithMetadata(
                 tempPodcast,
