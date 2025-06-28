@@ -135,9 +135,9 @@ public class JaffreeFFmpegService {
                     if (currentTime != LocalTime.MIN) {
                         double progress = ((double) currentTime.toNanoOfDay() / finalLoc.toNanoOfDay());
                         if (onlyAudio) {
-                            statusService.sendFullDetail(StatusKeys.VIDEO_CUT, progress, "");
-                        } else {
                             statusService.sendFullDetail(StatusKeys.PODCAST_CUT, progress, "");
+                        } else {
+                            statusService.sendFullDetail(StatusKeys.VIDEO_CUT, progress, "");
                         }
                     }
                 })
