@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 
@@ -53,6 +54,9 @@ public class ServiceRestController {
     @GetMapping(value = "/stream/{id}")
     public ResponseEntity<FileSystemResource> streamFile(@PathVariable Integer id) throws IOException {
         Path mainRecording = utilityComponent.getMainRecording(worshipServiceApi.getWorshipByServiceId(id));
+        if (Files.notExists(mainRecording)) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok().body(new FileSystemResource(mainRecording));
     }
 

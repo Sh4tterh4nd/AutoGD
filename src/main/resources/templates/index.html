@@ -16,7 +16,7 @@
             <!--            <th:block th:if="${worship.getVideoLink() == null}">-->
             <th:block th:if="${worship.getServiceType().getWebprio() == 2}">
                 <option th:value="${worship.getServiceID()}"
-                        th:text="${worship.startDate +'  ' + worship.getServiceType().getId() +' ' + worship.getServiceTitle(worship.getServiceLanguage())}"></option>
+                        th:text="${worship.startDate +' ' + worship.getServiceTitle(worship.getServiceLanguage())}"></option>
             </th:block>
             <!--            </th:block>-->
 

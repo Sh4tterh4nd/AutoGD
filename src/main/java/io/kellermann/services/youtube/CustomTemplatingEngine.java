@@ -13,7 +13,7 @@ import java.util.TreeMap;
 import java.util.regex.Pattern;
 
 @Component
-public class TemplatingEngine {
+public class CustomTemplatingEngine {
     private final Pattern WORD_JOIN_LOCATION_PATTERN = Pattern.compile("(?<=[a-z])(?<underscore>)(?=[A-Z])");
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
     private Map<Pattern, String> patternKeyValuesStore = new HashMap<>();

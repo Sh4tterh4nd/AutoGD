@@ -46,14 +46,14 @@ public class YoutubeUploader {
     private final String VIDEO_FILE_FORMAT = "video/*";
     private final YoutubeConfiguration ytYoutubeConfiguration;
 
-    private final TemplatingEngine templatingEngine;
+    private final CustomTemplatingEngine customTemplatingEngine;
     private final YouTube youTube;
     private final StatusService statusService;
 
 
-    public YoutubeUploader(YoutubeConfiguration ytYoutubeConfiguration, TemplatingEngine templatingEngine, YouTube youTube, StatusService statusService) {
+    public YoutubeUploader(YoutubeConfiguration ytYoutubeConfiguration, CustomTemplatingEngine customTemplatingEngine, YouTube youTube, StatusService statusService) {
         this.ytYoutubeConfiguration = ytYoutubeConfiguration;
-        this.templatingEngine = templatingEngine;
+        this.customTemplatingEngine = customTemplatingEngine;
         this.youTube = youTube;
         this.statusService = statusService;
     }
@@ -122,8 +122,8 @@ public class YoutubeUploader {
             // Most of the video's metadata is set on the VideoSnippet object.
             VideoSnippet snippet = new VideoSnippet();
 
-            snippet.setTitle(templatingEngine.processTemplateWithKeyModel(ytYoutubeConfiguration.getTitle(), worshipMetaData));
-            snippet.setDescription(templatingEngine.processTemplateWithKeyModel(ytYoutubeConfiguration.getDescription(), worshipMetaData));
+            snippet.setTitle(customTemplatingEngine.processTemplateWithKeyModel(ytYoutubeConfiguration.getTitle(), worshipMetaData));
+            snippet.setDescription(customTemplatingEngine.processTemplateWithKeyModel(ytYoutubeConfiguration.getDescription(), worshipMetaData));
 
 
             snippet.setTags(ytYoutubeConfiguration.getTags());
