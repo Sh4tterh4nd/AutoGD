@@ -32,8 +32,9 @@ dependencies {
     implementation 'org.eclipse.jetty:jetty-io:11.0.17'
 
     implementation 'org.jsoup:jsoup:1.18.1'
-
     implementation 'com.github.kokorin.jaffree:jaffree:2023.09.10'
+// https://mvnrepository.com/artifact/commons-io/commons-io
+    implementation("commons-io:commons-io:2.19.0")
 
 
     implementation 'commons-net:commons-net:3.6'

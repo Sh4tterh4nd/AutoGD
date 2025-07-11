@@ -17,6 +17,7 @@ public class VideoConfiguration {
     private Path recordings = Paths.get("");
     private Path output = Paths.get("");
     private Path wavTarget = Paths.get("");
+    private Path podcastData = Paths.get("");
 
 
     private String precodecParam = "";
@@ -30,10 +31,6 @@ public class VideoConfiguration {
 
     private String introPodcastName = "1_podcast_intro.mp3";
     private String outroPodcastName = "3_podcast_outro.mp3";
-
-
-    private String gdVideoOriginalName = "original.mp4";
-
 
     private String finishedGdVideo = "finishedGD.mp4";
 
@@ -143,13 +140,6 @@ public class VideoConfiguration {
         this.introSoundName = introSoundName;
     }
 
-    public String getGdVideoOriginalName() {
-        return gdVideoOriginalName;
-    }
-
-    public void setGdVideoOriginalName(String gdVideoOriginalName) {
-        this.gdVideoOriginalName = gdVideoOriginalName;
-    }
 
     public String getOutroVideoName() {
         return outroVideoName;
@@ -174,5 +164,14 @@ public class VideoConfiguration {
 
     public void setOutroPodcastName(String outroPodcastName) {
         this.outroPodcastName = outroPodcastName;
+    }
+
+
+    public Path getPodcastData() {
+        return podcastData;
+    }
+
+    public void setPodcastData(Path podcastData) {
+        this.podcastData = podcastData;
     }
 }

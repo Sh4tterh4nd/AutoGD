@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main}">
+<head>
+    <meta charset="UTF-8">
+    <title>AutoGD</title>
+</head>
+<body>
+
+<th:block layout:fragment="content">
+    <!--    <select class="form-control" style="width: 25em" id="worshipselect"-->
+    <!--            onchange="this.options[this.selectedIndex].value && (window.location = '/?id=' + this.options[this.selectedIndex].value);">-->
+    <!--        &lt;!&ndash;/*@thymesVar id="lastWorships" type="java.util.List<io.kellermann.model.gdVerwaltung.WorshipMetaData>"*/&ndash;&gt;-->
+    <!--        <th:block th:each="worship, iStat: ${lastWorships}">-->
+    <!--            &lt;!&ndash;            <th:block th:if="${worship.getVideoLink() == null}">&ndash;&gt;-->
+    <!--            <th:block th:if="${worship.getServiceType().getWebprio() == 3-->
+    <!--            && (worship.getPerson().getId() != null) }">-->
+
+    <!--                <option th:value="${worship.getServiceID()}"-->
+    <!--                        th:text="${worship.startDate +'  ' + worship.getServiceID() +' - ' + worship.getServiceTitle(worship.getServiceLanguage())}"></option>-->
+    <!--            </th:block>-->
+    <!--            &lt;!&ndash;            </th:block>&ndash;&gt;-->
+
+    <!--        </th:block>-->
+    <!--    </select>-->
+
+
+    <div class="container">
+        <h2>Upload File</h2>
+        <form id="upload-form">
+            <select class="form-control" style="width: 25em" id="worshipselect">
+                <!--/*@thymesVar id="lastWorships" type="java.util.List<io.kellermann.model.gdVerwaltung.WorshipMetaData>"*/-->
+                <th:block th:each="worship, iStat: ${lastWorships}">
+                    <!--            <th:block th:if="${worship.getVideoLink() == null}">-->
+                    <th:block
+                            th:if="${worship.getServiceType().getWebprio() == 3   && (worship.getPerson().getId() != null) }">
+                        <option th:value="${worship.getServiceID()}"
+                                th:text="${worship.startDate +'  ' + worship.getServiceID() +' - ' + worship.getServiceTitle(worship.getServiceLanguage())}"></option>
+                    </th:block>
+                    <!--            </th:block>-->
+
+                </th:block>
+            </select>
+            <div class="mb-3">
+                <input type="file" class="form-control" id="file-input" name="file" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Upload</button>
+        </form>
+
+        <div class="progress mt-3" style="height: 25px;">
+            <div id="progress-bar" class="progress-bar" role="progressbar" style="width: 0%;">
+                0%
+            </div>
+        </div>
+
+        <div id="upload-status" class="mt-3"></div>
+    </div>
+
+    <script>
+        document.getElementById('upload-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const fileInput = document.getElementById('file-input');
+            const serviceId = document.getElementById('worshipselect').value;
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('data', file); // 'file' is the field name
+            formData.append('id', serviceId); // 'file' is the field name
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/api/podcast'); // Replace with your actual upload URL
+
+            xhr.upload.addEventListener('progress', function (e) {
+                if (e.lengthComputable) {
+                    const percentComplete = Math.round((e.loaded / e.total) * 100);
+                    const progressBar = document.getElementById('progress-bar');
+                    progressBar.style.width = percentComplete + '%';
+                    progressBar.textContent = percentComplete + '%';
+                }
+            });
+
+            xhr.onload = function () {
+                const status = document.getElementById('upload-status');
+                if (xhr.status === 200) {
+                    status.innerHTML = '<div class="alert alert-success">Upload complete!</div>';
+                } else {
+                    status.innerHTML = '<div class="alert alert-danger">Upload failed!</div>';
+                }
+            };
+
+            xhr.onerror = function () {
+                document.getElementById('upload-status').innerHTML = '<div class="alert alert-danger">Upload error!</div>';
+            };
+
+            xhr.send(formData);
+        });
+    </script>
+
+
+</th:block>
+</body>
+</html>

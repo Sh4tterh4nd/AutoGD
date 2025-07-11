@@ -1,6 +1,10 @@
 spring:
   thymeleaf:
     cache: false
+  servlet:
+    multipart:
+      max-file-size: 10GB
+      max-request-size: 20GB
 
 server:
   port: 8099
@@ -21,10 +25,9 @@ autogd:
     recordings: ${autogd.video.input-workspace}\recordings
     output: ${autogd.video.input-workspace}\video
     wav-target: ${autogd.video.input-workspace}\wav
+    podcast-data: ${autogd.video.input-workspace}\pod-data
 
 
-    gdVideoStartTime: "00:22:53.5"
-    gdVideoEndTime: "00:29:10.5"
 
 
     precodec-param: ""
