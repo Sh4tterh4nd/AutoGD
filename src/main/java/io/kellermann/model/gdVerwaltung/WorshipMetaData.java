@@ -11,178 +11,178 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WorshipMetaData implements Comparable<WorshipMetaData> {
 
-	@JsonProperty("service_id")
-	private Integer serviceID;
+    @JsonProperty("service_id")
+    private Integer serviceID = -1;
 
-	@JsonProperty("service_startdate")
-	private LocalDate startDate;
+    @JsonProperty("service_startdate")
+    private LocalDate startDate;
 
-	@JsonProperty("service_starttime")
-	private LocalTime startTime;
+    @JsonProperty("service_starttime")
+    private LocalTime startTime;
 
-	@JsonProperty("service_language_id")
-	private Language serviceLanguage;
+    @JsonProperty("service_language_id")
+    private Language serviceLanguage;
 
-	@JsonProperty("campus_shortname")
-	private String campusShortname;
+    @JsonProperty("campus_shortname")
+    private String campusShortname;
 
-	@JsonProperty("service_image")
-	private String serviceImage;
+    @JsonProperty("service_image")
+    private String serviceImage;
 
-	@JsonProperty("service_albumart")
-	private String service_albumart;
+    @JsonProperty("service_albumart")
+    private String service_albumart;
 
-	@JsonProperty("service_videolink")
-	private String videoLink;
+    @JsonProperty("service_videolink")
+    private String videoLink;
 
-	@JsonProperty("service_youtubechannel_id")
-	private String youtubeChannelId;
+    @JsonProperty("service_youtubechannel_id")
+    private String youtubeChannelId;
 
-	private SeriesMetaData series;
+    private SeriesMetaData series;
 
-	private PersonMetaData person;
+    private PersonMetaData person;
 
-	private ServiceType serviceType;
+    private ServiceType serviceType;
 
-	private Map<Language, String> serviceTitleByLanguage = new HashMap<Language, String>();
+    private Map<Language, String> serviceTitleByLanguage = new HashMap<Language, String>();
 
-	public String getServiceTitle(Language serviceLang) {
-		return serviceTitleByLanguage.get(serviceLang);
-	}
+    public String getServiceTitle(Language serviceLang) {
+        return serviceTitleByLanguage.get(serviceLang);
+    }
 
-	public void addTitleLang(Language language, String value) {
-		this.serviceTitleByLanguage.put(language, value);
-	}
+    public void addTitleLang(Language language, String value) {
+        this.serviceTitleByLanguage.put(language, value);
+    }
 
-	public Integer getServiceID() {
-		return serviceID;
-	}
+    public Integer getServiceID() {
+        return serviceID;
+    }
 
-	public void setServiceID(Integer serviceID) {
-		this.serviceID = serviceID;
-	}
+    public void setServiceID(Integer serviceID) {
+        this.serviceID = serviceID;
+    }
 
-	public ServiceType getServiceType() {
-		return serviceType;
-	}
+    public ServiceType getServiceType() {
+        return serviceType;
+    }
 
-	public void setServiceType(ServiceType serviceType) {
-		this.serviceType = serviceType;
-	}
+    public void setServiceType(ServiceType serviceType) {
+        this.serviceType = serviceType;
+    }
 
-	public PersonMetaData getPerson() {
-		return person;
-	}
+    public PersonMetaData getPerson() {
+        return person;
+    }
 
-	public void setPerson(PersonMetaData person) {
-		this.person = person;
-	}
+    public void setPerson(PersonMetaData person) {
+        this.person = person;
+    }
 
-	public LocalDate getStartDate() {
-		return startDate;
-	}
+    public LocalDate getStartDate() {
+        return startDate;
+    }
 
-	public void setStartDate(LocalDate startDate) {
-		this.startDate = startDate;
-	}
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
 
-	public LocalTime getStartTime() {
-		return startTime;
-	}
+    public LocalTime getStartTime() {
+        return startTime;
+    }
 
-	public void setStartTime(LocalTime startTime) {
-		this.startTime = startTime;
-	}
+    public void setStartTime(LocalTime startTime) {
+        this.startTime = startTime;
+    }
 
-	public Language getServiceLanguage() {
-		return serviceLanguage;
-	}
+    public Language getServiceLanguage() {
+        return serviceLanguage;
+    }
 
-	public void setServiceLanguage(Language serviceLanguage) {
-		this.serviceLanguage = serviceLanguage;
-	}
+    public void setServiceLanguage(Language serviceLanguage) {
+        this.serviceLanguage = serviceLanguage;
+    }
 
-	public String getCampusShortname() {
-		return campusShortname;
-	}
+    public String getCampusShortname() {
+        return campusShortname;
+    }
 
-	public void setCampusShortname(String theCampusShortname) {
-		campusShortname = theCampusShortname;
-	}
+    public void setCampusShortname(String theCampusShortname) {
+        campusShortname = theCampusShortname;
+    }
 
-	public SeriesMetaData getSeries() {
-		return series;
-	}
+    public SeriesMetaData getSeries() {
+        return series;
+    }
 
-	public void setSeries(SeriesMetaData series) {
-		this.series = series;
-	}
+    public void setSeries(SeriesMetaData series) {
+        this.series = series;
+    }
 
-	public Map<Language, String> getServiceTitleByLanguage() {
-		return serviceTitleByLanguage;
-	}
+    public Map<Language, String> getServiceTitleByLanguage() {
+        return serviceTitleByLanguage;
+    }
 
-	public void setServiceTitleByLanguage(Map<Language, String> serviceTitleByLanguage) {
-		this.serviceTitleByLanguage = serviceTitleByLanguage;
-	}
+    public void setServiceTitleByLanguage(Map<Language, String> serviceTitleByLanguage) {
+        this.serviceTitleByLanguage = serviceTitleByLanguage;
+    }
 
-	public String getServiceImage() {
-		return serviceImage;
-	}
+    public String getServiceImage() {
+        return serviceImage;
+    }
 
-	public void setServiceImage(String serviceImage) {
-		this.serviceImage = serviceImage;
-	}
+    public void setServiceImage(String serviceImage) {
+        this.serviceImage = serviceImage;
+    }
 
-	public String getService_albumart() {
-		return service_albumart;
-	}
+    public String getService_albumart() {
+        return service_albumart;
+    }
 
-	public void setService_albumart(String service_albumart) {
-		this.service_albumart = service_albumart;
-	}
+    public void setService_albumart(String service_albumart) {
+        this.service_albumart = service_albumart;
+    }
 
-	public String getVideoLink() {
-		return videoLink;
-	}
+    public String getVideoLink() {
+        return videoLink;
+    }
 
-	public void setVideoLink(String videoLink) {
-		this.videoLink = videoLink;
-	}
+    public void setVideoLink(String videoLink) {
+        this.videoLink = videoLink;
+    }
 
-	public String getYoutubeChannelId() {
-		return youtubeChannelId;
-	}
+    public String getYoutubeChannelId() {
+        return youtubeChannelId;
+    }
 
-	public void setYoutubeChannelId(String youtubeChannelId) {
-		this.youtubeChannelId = youtubeChannelId;
-	}
+    public void setYoutubeChannelId(String youtubeChannelId) {
+        this.youtubeChannelId = youtubeChannelId;
+    }
 
-	@Override
-	public String toString() {
-		return "WorshipMetaData{" +
-				"serviceID=" + serviceID +
-				", startDate=" + startDate +
-				", startTime=" + startTime +
-				", serviceLanguage=" + serviceLanguage +
-				", campusShortname='" + campusShortname + '\'' +
-				", serviceImage='" + serviceImage + '\'' +
-				", service_albumart='" + service_albumart + '\'' +
-				", videoLink='" + videoLink + '\'' +
-				", youtubeChannelId='" + youtubeChannelId + '\'' +
-				", series=" + series +
-				", person=" + person +
-				", serviceType=" + serviceType +
-				", serviceTitleByLanguage=" + serviceTitleByLanguage +
-				'}';
-	}
+    @Override
+    public String toString() {
+        return "WorshipMetaData{" +
+                "serviceID=" + serviceID +
+                ", startDate=" + startDate +
+                ", startTime=" + startTime +
+                ", serviceLanguage=" + serviceLanguage +
+                ", campusShortname='" + campusShortname + '\'' +
+                ", serviceImage='" + serviceImage + '\'' +
+                ", service_albumart='" + service_albumart + '\'' +
+                ", videoLink='" + videoLink + '\'' +
+                ", youtubeChannelId='" + youtubeChannelId + '\'' +
+                ", series=" + series +
+                ", person=" + person +
+                ", serviceType=" + serviceType +
+                ", serviceTitleByLanguage=" + serviceTitleByLanguage +
+                '}';
+    }
 
-	@Override
-	public int compareTo(WorshipMetaData o) {
-		if (!this.startDate.isEqual(o.startDate)){
-			return this.startDate.compareTo(o.startDate);
-		}else {
-			return this.startTime.compareTo(o.startTime);
-		}
-	}
+    @Override
+    public int compareTo(WorshipMetaData o) {
+        if (!this.startDate.isEqual(o.startDate)) {
+            return this.startDate.compareTo(o.startDate);
+        } else {
+            return this.startTime.compareTo(o.startTime);
+        }
+    }
 }

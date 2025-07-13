@@ -13,6 +13,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.Comparator;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -26,10 +27,33 @@ public class UtilityComponent {
         this.videoConfiguration = videoConfiguration;
     }
 
-    public void clearDirectory(Path toClear){
+
+    public boolean doesPodcastRecordingExist(Integer worshipMetaData) {
+        Path podcastRecording = findPodcastRecording(worshipMetaData);
+        System.out.println(podcastRecording);
+        return Objects.nonNull(podcastRecording);
+    }
+
+
+    public Path findPodcastRecording(Integer serviceId) {
+        try (Stream<Path> pathStream = Files.walk(videoConfiguration.getPodcastData())) {
+            return pathStream
+                    .filter(Files::isRegularFile)
+                    .filter(s -> s.toString().contains(serviceId.toString()))
+                    .findFirst()
+                    .orElse(null);
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+
+    public void clearDirectory(Path toClear) {
         try (Stream<Path> pathStream = Files.walk(toClear)) {
             pathStream
-                    .filter(s->!s.equals(toClear))
+                    .filter(s -> !s.equals(toClear))
                     .sorted(Comparator.reverseOrder())
                     .map(Path::toFile)
                     .forEach(File::delete);

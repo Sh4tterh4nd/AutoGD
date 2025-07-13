@@ -1,7 +1,12 @@
 package io.kellermann.controller.api;
 
 import io.kellermann.config.VideoConfiguration;
+import io.kellermann.services.UtilityComponent;
 import org.apache.commons.io.FilenameUtils;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,9 +23,11 @@ import java.nio.file.Path;
 public class PodcastRestController {
 
     private final VideoConfiguration videoConfiguration;
+    private final UtilityComponent utilityComponent;
 
-    public PodcastRestController(VideoConfiguration videoConfiguration) {
+    public PodcastRestController(VideoConfiguration videoConfiguration, UtilityComponent utilityComponent) {
         this.videoConfiguration = videoConfiguration;
+        this.utilityComponent = utilityComponent;
     }
 
     @PostMapping
@@ -37,7 +44,16 @@ public class PodcastRestController {
             e.printStackTrace();
         }
 
-
         return "Success";
     }
+
+
+    @GetMapping(value = "/stream/{id}")
+    public ResponseEntity<FileSystemResource> streamFile(@PathVariable Integer id) {
+        if (utilityComponent.doesPodcastRecordingExist(id)) {
+            return ResponseEntity.ok().body(new FileSystemResource(utilityComponent.findPodcastRecording(id)));
+        }
+        return ResponseEntity.notFound().build();
+    }
+
 }
